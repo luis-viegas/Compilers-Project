@@ -12,6 +12,15 @@ TOKEN :
 	< OPEN_PAREN : "(" > |
 	< CLOSE_PAREN : ")" > |
 	< INTEGER : (["0" - "9"])+ >
+
+	< WORD : ["a"-"z","A"-"Z","_"](["a"-"z","A"-"Z","0"-"9","_"])* >
+	< SEMICOLON : ";" >
+	< COLON : "." >
+	< INT : "int">
+	<BOOLEAN : "boolean">
+	<LEFTSQUAREBRACKET : "[">
+    <RIGHTSQUAREBRACKET : "]">
+    < IMPORT : "import" >
 ;
 
 Start : AdditiveExpression <EOF> ;
@@ -37,3 +46,33 @@ Factor :
 	< MINUS> Factor |
 	< OPEN_PAREN > AdditiveExpression < CLOSE_PAREN >
 ;
+
+
+Type:
+    (
+        < INT > |
+        < LEFTSQUAREBRACKET >
+        < RIGHTSQUAREBRACKET >
+    ) |
+    < BOOLEAN > |
+    < INT > |
+    < WORD >
+;
+
+ImportDeclaration:
+    (
+        < IMPORT >
+        < WORD >
+        (
+          < COLON >
+          < WORD>
+        )*
+        < SEMICOLON >
+    )*
+
+VarDeclaration :
+    Type
+    < WORD >
+    < SEMICOLON>
+;
+

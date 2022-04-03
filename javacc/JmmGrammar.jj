@@ -11,19 +11,23 @@ TOKEN :
 	< DIVIDE : "/" > |
 	< OPEN_PAREN : "(" > |
 	< CLOSE_PAREN : ")" > |
-	< INTEGER : (["0" - "9"])+ >
+	< INTEGER : (["0" - "9"])+ > |
 
-	< WORD : ["a"-"z","A"-"Z","_"](["a"-"z","A"-"Z","0"-"9","_"])* >
-	< SEMICOLON : ";" >
-	< COLON : "." >
-	< INT : "int">
-	<BOOLEAN : "boolean">
-	<LEFTSQUAREBRACKET : "[">
-    <RIGHTSQUAREBRACKET : "]">
-    < IMPORT : "import" >
+    <EXTENDS: "extends"> |
+    < CLASS: "class" > |
+    < IMPORT : "import" > |
+	< WORD : ["a"-"z","A"-"Z","_"](["a"-"z","A"-"Z","0"-"9","_"])* > |
+	< SEMICOLON : ";" > |
+	< COLON : "." > |
+	< INT : "int"> |
+	<BOOLEAN : "boolean"> |
+	<LEFTSQUAREBRACKET : "["> |
+    <RIGHTSQUAREBRACKET : "]"> |
+    <LEFTBRACKET : "{"> |
+    <RIGTHBRACKET : "}">
 ;
 
-Start : AdditiveExpression <EOF> ;
+Start : Program ;
 
 AdditiveExpression :
 	MultiplicativeExpression
@@ -69,6 +73,24 @@ ImportDeclaration:
         )*
         < SEMICOLON >
     )*
+;
+
+ClassDeclaration:
+    <CLASS>
+    <WORD>
+    (
+        <EXTENDS>
+        <WORD>
+    )?
+    <LEFTBRACKET>
+    (
+    VarDeclaration
+    )*
+    (
+    MethodDeclaration
+    )*
+    <RIGTHBRACKET>
+;
 
 VarDeclaration :
     Type
@@ -76,3 +98,11 @@ VarDeclaration :
     < SEMICOLON>
 ;
 
+MethodDeclaration:
+    <WORD>
+;
+
+Program:
+    ImportDeclaration
+    ClassDeclaration
+    <EOF> ;

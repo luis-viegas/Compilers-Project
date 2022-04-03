@@ -13,6 +13,12 @@ TOKEN :
 	< CLOSE_PAREN : ")" > |
 	< INTEGER : (["0" - "9"])+ > |
 
+    <STRING: "string"> |
+    <MAIN: "main"> |
+    <VOID: "void"> |
+    <STATIC: "static"> |
+    <RETURN: "return" > |
+    <PUBLIC: "public"> |
     <EXTENDS: "extends"> |
     < CLASS: "class" > |
     < IMPORT : "import" > |
@@ -21,10 +27,13 @@ TOKEN :
 	< COLON : "." > |
 	< INT : "int"> |
 	<BOOLEAN : "boolean"> |
-	<LEFTSQUAREBRACKET : "["> |
-    <RIGHTSQUAREBRACKET : "]"> |
-    <LEFTBRACKET : "{"> |
-    <RIGTHBRACKET : "}">
+	< LEFTSQUAREBRACKET : "["> |
+    < RIGHTSQUAREBRACKET : "]"> |
+    < LEFTBRACKET : "{"> |
+    < RIGHTBRACKET : "}"> |
+    < LEFTPARENTHESIS: "("> |
+    < RIGHTPARENTHESIS: ")"> |
+    < COMMA: "," >
 ;
 
 Start : Program ;
@@ -89,7 +98,7 @@ ClassDeclaration:
     (
     MethodDeclaration
     )*
-    <RIGTHBRACKET>
+    <RIGHTBRACKET>
 ;
 
 VarDeclaration :
@@ -99,7 +108,59 @@ VarDeclaration :
 ;
 
 MethodDeclaration:
+    <PUBLIC>
+    (
+    Type
     <WORD>
+    <LEFTPARENTHESIS>
+    (
+    Type
+    <WORD>
+    (
+    <COMMA>
+    Type
+    <WORD>
+    )*
+    )?
+    <RIGHTPARENTHESIS>
+    <LEFTBRACKET>
+    (
+    VarDeclaration
+    )*
+    (
+    Statement
+    )*
+    <RETURN>
+    Expression
+    <SEMICOLON>
+    <RIGHTBRACKET>
+    )
+    |
+    <STATIC>
+    <VOID>
+    <MAIN>
+    <LEFTPARENTHESIS>
+    <STRING>
+    <LEFTSQUAREBRACKET>
+    <RIGHTSQUAREBRACKET>
+    <WORD>
+    <RIGHTPARENTHESIS>
+    <LEFTBRACKET>
+    (
+    VarDeclaration
+    )*
+    (
+    Statement
+    )*
+    <RIGHTBRACKET>
+;
+
+Expression:
+<WORD>
+;
+
+Statement:
+<WORD>
 ;
 
 Program:

@@ -11,19 +11,19 @@ TOKEN :
 	< DIVIDE : "/" > |
 	< OPEN_PAREN : "(" > |
 	< CLOSE_PAREN : ")" > |
-	< INTEGER : (["0" - "9"])+ >
+	< INTEGER : (["0" - "9"])+ > |
 
-	< WORD : ["a"-"z","A"-"Z","_"](["a"-"z","A"-"Z","0"-"9","_"])* >
-	< SEMICOLON : ";" >
-	< COLON : "." >
-	< INT : "int">
-	<BOOLEAN : "boolean">
-	<LEFTSQUAREBRACKET : "[">
+    < IMPORT : "import" > |
+	< WORD : ["a"-"z","A"-"Z","_"](["a"-"z","A"-"Z","0"-"9","_"])* > |
+	< SEMICOLON : ";" > |
+	< COLON : "." > |
+	< INT : "int"> |
+	<BOOLEAN : "boolean"> |
+	<LEFTSQUAREBRACKET : "["> |
     <RIGHTSQUAREBRACKET : "]">
-    < IMPORT : "import" >
 ;
 
-Start : AdditiveExpression <EOF> ;
+Start : VarDeclaration <EOF> ;
 
 AdditiveExpression :
 	MultiplicativeExpression
@@ -48,6 +48,8 @@ Factor :
 ;
 
 
+
+
 Type:
     (
         < INT > |
@@ -69,6 +71,7 @@ ImportDeclaration:
         )*
         < SEMICOLON >
     )*
+;
 
 VarDeclaration :
     Type

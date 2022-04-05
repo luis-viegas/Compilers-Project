@@ -22,4 +22,4 @@ import pt.up.fe.specs.util.SpecsIo;
             var result = TestUtils.parse(SpecsIo.getResource("fixtures/public/myTests/test.jmm"));
             TestUtils.noErrors(result.getReports());
         }
-    }
+ }

@@ -9,29 +9,38 @@ TOKEN :
 	< MINUS : "-" > |
 	< TIMES : "*" > |
 	< DIVIDE : "/" > |
+	< EQUAL : "="> |
+	< NEGATION : "!"> |
 	< INTEGER : (["0" - "9"])+ > |
-
     <STRING: "string"> |
     <MAIN: "main"> |
     <VOID: "void"> |
+    <IF : "if"> |
+    <ELSE : "else"> |
+    <WHILE : "while"> |
     <STATIC: "static"> |
     <RETURN: "return" > |
     <PUBLIC: "public"> |
     <EXTENDS: "extends"> |
+    < LENGTH : "length"> |
     < CLASS: "class" > |
     < IMPORT : "import" > |
-	< WORD : ["a"-"z","A"-"Z","_"](["a"-"z","A"-"Z","0"-"9","_"])* > |
+    < TRUE : "true"> |
+    < FALSE : "false"> |
+    < THIS : "this"> |
+    < NEW : "new"> |
 	< SEMICOLON : ";" > |
 	< COLON : "." > |
 	< INT : "int"> |
-	<BOOLEAN : "boolean"> |
+	< BOOLEAN : "boolean"> |
 	< LEFTSQUAREBRACKET : "["> |
     < RIGHTSQUAREBRACKET : "]"> |
     < LEFTBRACKET : "{"> |
     < RIGHTBRACKET : "}"> |
     < LEFTPARENTHESIS: "("> |
     < RIGHTPARENTHESIS: ")"> |
-    < COMMA: "," >
+    < COMMA: "," > |
+    < WORD : ["a"-"z","A"-"Z","_"](["a"-"z","A"-"Z","0"-"9","_"])* >
 ;
 
 Start : Program ;
@@ -79,9 +88,7 @@ MethodDeclaration:
 ;
 
 MainFunction:
-    <STATIC>
-    <VOID>
-    <MAIN>
+    <STATIC><VOID><MAIN>
     <LEFTPARENTHESIS>
     <STRING>
     <LEFTSQUAREBRACKET>
@@ -89,12 +96,8 @@ MainFunction:
     <WORD>
     <RIGHTPARENTHESIS>
     <LEFTBRACKET>
-    (
-    VarDeclaration
-    )*
-    (
-    Statement
-    )*
+    (VarDeclaration)*
+    (Statement)*
     <RIGHTBRACKET>
 ;
 
@@ -122,11 +125,70 @@ NormalFunction:
 ;
 
 Expression:
+    <INTEGER> |
+    <TRUE> |
+    <FALSE> |
+    <THIS> |
+    ((<WORD> | <THIS> | (<LEFTPARENTHESIS> Expression <RIGHTPARENTHESIS>)) ExpressionColon) |
+    (<NEW> ExpressionNew) |
+    (<NEGATION> Expression) |
+    (<LEFTPARENTHESIS> Expression <RIGHTPARENTHESIS>) |
     <WORD>
 ;
 
+ExpressionColon:
+        (<COLON> <LENGTH>) |
+        (
+            <WORD>
+            <LEFTPARENTHESIS>
+            (
+                Expression
+                (<COMMA> Expression)*
+            )?
+            <RIGHTPARENTHESIS>
+        )
+;
+
+ExpressionNew:
+    ( <INT> <LEFTSQUAREBRACKET> Expression <RIGHTSQUAREBRACKET>) |
+    (<WORD> <LEFTPARENTHESIS><RIGHTPARENTHESIS>)
+;
+
 Statement:
-    <WORD>
+    (
+        <WORD>
+        (( <EQUAL> Expression) |
+        (
+            <LEFTSQUAREBRACKET>
+            Expression
+            <RIGHTSQUAREBRACKET>
+            <EQUAL>
+            Expression
+        ))
+        <SEMICOLON>
+    ) |
+    (<LEFTBRACKET> Statement <RIGHTBRACKET>) |
+    IfStatement |
+    WhileStatement |
+    (Expression <SEMICOLON>)
+;
+
+IfStatement:
+    <IF>
+    <LEFTPARENTHESIS>
+    Expression
+    <RIGHTPARENTHESIS>
+    Statement
+    <ELSE>
+    Statement
+;
+
+WhileStatement:
+    <WHILE>
+    <LEFTPARENTHESIS>
+    Expression
+    <RIGHTPARENTHESIS>
+    Statement
 ;
 
 Program:

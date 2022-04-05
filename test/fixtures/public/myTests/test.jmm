@@ -6,6 +6,15 @@ class Test {
 
     public int func(int a) {
         int temp;
-        return temp;
+
+        while (false)
+            a = new thing();
+            b = height.length;
+
+        new object();
+
+        ola[12] = 12;
+
+        return this;
     }
 }

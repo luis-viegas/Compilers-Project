@@ -9,67 +9,32 @@ TOKEN :
 	< MINUS : "-" > |
 	< TIMES : "*" > |
 	< DIVIDE : "/" > |
-	< MINOR : "<" > |
-	< AND : "&&" > |
-	< OPEN_PAREN : "(" > |
-	< CLOSE_PAREN : ")" > |
 	< INTEGER : (["0" - "9"])+ > |
 
-    <STRING: "String"> |
-    <TRUE : "true"> |
-    <FALSE : "false"> |
-    <LENGTH : "length"> |
-    <NEW : "new"> |
+    <STRING: "string"> |
     <MAIN: "main"> |
     <VOID: "void"> |
-    <THIS: "this"> |
     <STATIC: "static"> |
     <RETURN: "return" > |
     <PUBLIC: "public"> |
-    <ELSE: "else"> |
     <EXTENDS: "extends"> |
-    <IF: "if"> |
-    < WHILE: "while"> |
     < CLASS: "class" > |
     < IMPORT : "import" > |
 	< WORD : ["a"-"z","A"-"Z","_"](["a"-"z","A"-"Z","0"-"9","_"])* > |
 	< SEMICOLON : ";" > |
 	< COLON : "." > |
 	< INT : "int"> |
-	< EQUAL: "="> |
-	< BOOLEAN : "boolean"> |
+	<BOOLEAN : "boolean"> |
 	< LEFTSQUAREBRACKET : "["> |
     < RIGHTSQUAREBRACKET : "]"> |
     < LEFTBRACKET : "{"> |
     < RIGHTBRACKET : "}"> |
-    < COMMA: "," > |
-    < EXCLAMATION: "!" >
+    < LEFTPARENTHESIS: "("> |
+    < RIGHTPARENTHESIS: ")"> |
+    < COMMA: "," >
 ;
 
 Start : Program ;
-
-AdditiveExpression :
-	MultiplicativeExpression
-	(
-		(< PLUS > | < MINUS >)
-		MultiplicativeExpression
-	)?
-;
-
-MultiplicativeExpression :
-	Factor
-	(
-		(< TIMES > | < DIVIDE >)
-		Factor
-	)?
-;
-
-Factor :
-	< INTEGER > |
-	< MINUS> Factor |
-	< OPEN_PAREN > AdditiveExpression < CLOSE_PAREN >
-;
-
 
 Type:
     (
@@ -86,10 +51,7 @@ ImportDeclaration:
     (
         < IMPORT >
         < WORD >
-        (
-          < COLON >
-          < WORD>
-        )*
+        (<COLON> <WORD>)*
         < SEMICOLON >
     )*
 ;
@@ -97,17 +59,10 @@ ImportDeclaration:
 ClassDeclaration:
     <CLASS>
     <WORD>
-    (
-        <EXTENDS>
-        <WORD>
-    )?
+    (<EXTENDS> <WORD> )?
     <LEFTBRACKET>
-    (
-    VarDeclaration
-    )*
-    (
-    MethodDeclaration
-    )*
+    (VarDeclaration)*
+    (MethodDeclaration)*
     <RIGHTBRACKET>
 ;
 
@@ -119,16 +74,20 @@ VarDeclaration :
 
 MethodDeclaration:
     <PUBLIC>
-    (
+    NormalFunction |
+    MainFunction
+;
+
+MainFunction:
     <STATIC>
     <VOID>
     <MAIN>
-    < OPEN_PAREN >
+    <LEFTPARENTHESIS>
     <STRING>
     <LEFTSQUAREBRACKET>
     <RIGHTSQUAREBRACKET>
     <WORD>
-    < CLOSE_PAREN >
+    <RIGHTPARENTHESIS>
     <LEFTBRACKET>
     (
     VarDeclaration
@@ -137,174 +96,40 @@ MethodDeclaration:
     Statement
     )*
     <RIGHTBRACKET>
-    |
+;
+
+NormalFunction:
     Type
     <WORD>
-    < OPEN_PAREN >
+    <LEFTPARENTHESIS>
     (
-    Type
-    <WORD>
-    (
-    <COMMA>
-    Type
-    <WORD>
-    )*
+        Type
+        <WORD>
+        (
+            <COMMA>
+            Type
+            <WORD>
+        )*
     )?
-    < CLOSE_PAREN >
+    <RIGHTPARENTHESIS>
     <LEFTBRACKET>
-    (
-    VarDeclaration
-    )*
-    (
-    Statement
-    )*
+    (VarDeclaration)*
+    (Statement)*
     <RETURN>
     Expression
     <SEMICOLON>
     <RIGHTBRACKET>
-    )
-
 ;
 
 Expression:
-<TRUE>
-|
-<FALSE>
-|
-<THIS>
-|
-(
-<EXCLAMATION>
-Expression
-)
-|
-(
- < OPEN_PAREN >
- Expression
- < CLOSE_PAREN >
-)
-|
-<WORD>
-|
-(
-Expression
-(
-< PLUS >
-|
-< MINUS >
-|
-< TIMES >
-|
-< DIVIDE>
-|
-< MINOR >
-|
-< AND >
-)
-Expression
-)
-|
-(
-Expression
-< LEFTSQUAREBRACKET >
-    Expression
-< RIGHTSQUAREBRACKET >
-)
-|
-(
-Expression
-< COLON>
-<LENGTH>
-)
-|
-(
-< NEW >
-< INT >
-< LEFTSQUAREBRACKET >
-    Expression
-< RIGHTSQUAREBRACKET >
-)
-|
-(
-< NEW >
-< WORD >
-< OPEN_PAREN >
-< CLOSE_PAREN >
-)
-|
-(
-Expression
-< COLON >
-< WORD >
-< OPEN_PAREN >
-    (
-    Expression
-    (
-    <COMMA>
-    Expression
-    )*
-    )?
-< CLOSE_PAREN >
-
-)
-
+    <WORD>
 ;
 
 Statement:
-(
-    <LEFTBRACKET>
-    (
-        Statement
-    )*
-    <RIGHTBRACKET>
-)
-|
-(
-    <IF>
-    < OPEN_PAREN >
-        Expression
-    < CLOSE_PAREN >
-    Statement
-    <ELSE>
-    Statement
-)
-|
-(
-    <WHILE>
-    < OPEN_PAREN >
-        Expression
-    < CLOSE_PAREN >
-    Statement
-)
-|
-
-(
-    < WORD >
-    (
-    < EQUAL >
-    Expression
-    < SEMICOLON>
-    |
-    < LEFTSQUAREBRACKET >
-        Expression
-    < RIGHTSQUAREBRACKET >
-    < EQUAL >
-    Expression
-    < SEMICOLON>
-    )
-)
-|
-(
-    Expression
-    < SEMICOLON>
-)
-
-
+    <WORD>
 ;
-
-
 
 Program:
     ImportDeclaration
-    Statement
+    ClassDeclaration
     <EOF> ;

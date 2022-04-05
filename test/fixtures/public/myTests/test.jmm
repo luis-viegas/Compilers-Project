@@ -1,3 +1,11 @@
 import a;
 
-class Test {}
+class Test {
+    int a;
+    boolean b;
+
+    public int func(int a) {
+        int temp;
+        return temp;
+    }
+}

@@ -4,6 +4,7 @@
 /.settings/
 /generated/
 /run/
+.DS_Store
 
 # Class files
 **/*.class

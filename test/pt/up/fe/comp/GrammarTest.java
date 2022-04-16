@@ -17,11 +17,11 @@ import org.junit.Test;
 
 public class GrammarTest {
 
-    private static final String IMPORT = "";
+    private static final String IMPORT = "ImportDeclaration";
     private static final String MAIN_METHOD = "";
     private static final String INSTANCE_METHOD = "";
     private static final String STATEMENT = "";
-    private static final String EXPRESSION = "";
+    private static final String EXPRESSION = "Expressionv2";
 
     private static void noErrors(String code, String grammarRule) {
         if (grammarRule.isEmpty()) {
@@ -221,7 +221,7 @@ public class GrammarTest {
 
     @Test
     public void testExprAdd() {
-        noErrors("2 + 3", EXPRESSION);
+        noErrors("2 + 3 - 1", EXPRESSION);
     }
 
     @Test

@@ -1,6 +1,7 @@
 PARSER_PACKAGE=pt.up.fe.comp;
 PARSER_CLASS=JmmGrammarParser;
 SMART_NODE_CREATION=false;
+TOKENS_ARE_NODES = false;
 
 SKIP : " " | "\t" | "\r" | "\n";
 
@@ -124,29 +125,107 @@ NormalFunction:
     <RIGHTBRACKET>
 ;
 
+
+Expressionv2:
+    Addv2
+;
+
+Addv2 #void:
+    ExprTerm ( (< PLUS > ExprTerm) ({jjtThis.put("op", "add");}) #BinOp(2)
+    | (< MINUS > ExprTerm) ({jjtThis.put("op", "sub");}) #BinOp(2)  )*
+;
+
+ExprTerm #void:
+    (<INTEGER> {jjtThis.put("value", lastConsumedToken.getImage());} ) #IntLiteral
+;
+
 Expression:
+    SCAN 2
     <INTEGER> |
     <TRUE> |
     <FALSE> |
     <THIS> |
-    ((<WORD> | <THIS> | (<LEFTPARENTHESIS> Expression <RIGHTPARENTHESIS>)) ExpressionColon) |
+    ExpressionColon |
     (<NEW> ExpressionNew) |
     (<NEGATION> Expression) |
-    (<LEFTPARENTHESIS> Expression <RIGHTPARENTHESIS>) |
+    ExpressionBetweenParenthesis |
+    ExpressionArray |
+    AdditiveExpression |
     <WORD>
 ;
 
+AdditiveExpression:
+    MultiplicativeExpression
+    ( <PLUS> MultiplicativeExpression #BinOp(2)
+
+//          (<PLUS> MultiplicativeExpression ({jjtThis.put("op","add");}) ) |
+//          (<MINUS> MultiplicativeExpression ({jjtThis.put("op","subtract");}) )
+
+    )*
+;
+
+
+/*
+SubtractionExpression:
+    <MINUS>
+    MultiplicativeExpression
+    ({jjtThis.put("op","subtract");})
+    #BinOp(2))
+;
+*/
+MultiplicativeExpression:
+    Factor
+    (
+       MultExpression | DivExpression
+    )*
+;
+
+MultExpression:
+    <TIMES>
+    Factor
+//    ({jjtThis.put("op","mult");})
+//    #BinOp(2)
+;
+
+DivExpression:
+    <DIVIDE>
+    Factor
+//    ({jjtthis.put("op","div");})
+//    #BinOp(2)
+;
+
+Factor:
+    <INTEGER> |
+    <MINUS> Factor |
+    <LEFTPARENTHESIS> AdditiveExpression <RIGHTPARENTHESIS>
+;
+
+ExpressionArray:
+    (<WORD> | ExpressionBetweenParenthesis | ExpressionColon)
+    <LEFTSQUAREBRACKET>
+    Expression
+    <RIGHTSQUAREBRACKET>
+;
+
+
+ExpressionBetweenParenthesis:
+    <LEFTPARENTHESIS>
+    Expression
+    <RIGHTPARENTHESIS>
+;
+
 ExpressionColon:
-        (<COLON> <LENGTH>) |
+    (<THIS> | <WORD> | ExpressionBetweenParenthesis)
+    ((<COLON> <LENGTH>) |
+    (
+        <WORD>
+        <LEFTPARENTHESIS>
         (
-            <WORD>
-            <LEFTPARENTHESIS>
-            (
-                Expression
-                (<COMMA> Expression)*
-            )?
-            <RIGHTPARENTHESIS>
-        )
+            Expression
+            (<COMMA> Expression)*
+        )?
+        <RIGHTPARENTHESIS>
+    ))
 ;
 
 ExpressionNew:
@@ -195,3 +274,32 @@ Program:
     ImportDeclaration
     ClassDeclaration
     <EOF> ;
+
+
+
+
+INJECT BaseNode :
+		import pt.up.fe.comp.jmm.ast.JmmNode;
+		import pt.up.fe.comp.jmm.ast.AJmmNode;
+		import pt.up.fe.specs.util.SpecsCollections;
+		extends AJmmNode
+{
+    @Override
+    public List<JmmNode> getChildren() {
+
+        return SpecsCollections.cast(children(), JmmNode.class);
+    }
+
+    @Override
+    public void add(JmmNode child, int index) {
+
+        if (child instanceof Node) {
+
+            addChild(index, (Node) child);
+        } else {
+
+            throw new RuntimeException("Node " + child + " is not a Node.");
+        }
+
+    }
+}

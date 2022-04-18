@@ -13,7 +13,7 @@ TOKEN :
 	< EQUAL : "="> |
 	< NEGATION : "!"> |
 	< INTEGER : (["0" - "9"])+ > |
-    <STRING: "string"> |
+    <STRING: "String"> |
     <MAIN: "main"> |
     <VOID: "void"> |
     <IF : "if"> |
@@ -84,8 +84,8 @@ VarDeclaration :
 
 MethodDeclaration:
     <PUBLIC>
-    NormalFunction |
-    MainFunction
+    (NormalFunction |
+    MainFunction)
 ;
 
 MainFunction:
@@ -125,11 +125,6 @@ NormalFunction:
     <RIGHTBRACKET>
 ;
 
-
-Expressionv2:
-    Addv2
-;
-
 Addv2 #void:
     ExprTerm ( (< PLUS > ExprTerm) ({jjtThis.put("op", "add");}) #BinOp(2)
     | (< MINUS > ExprTerm) ({jjtThis.put("op", "sub");}) #BinOp(2)  )*
@@ -150,17 +145,15 @@ Expression:
     (<NEGATION> Expression) |
     ExpressionBetweenParenthesis |
     ExpressionArray |
-    AdditiveExpression |
+    AdditiveExpression #Expressaologica |
     <WORD>
 ;
 
-AdditiveExpression:
+AdditiveExpression #void:
     MultiplicativeExpression
-    ( <PLUS> MultiplicativeExpression #BinOp(2)
-
-//          (<PLUS> MultiplicativeExpression ({jjtThis.put("op","add");}) ) |
-//          (<MINUS> MultiplicativeExpression ({jjtThis.put("op","subtract");}) )
-
+    (
+          ( (<PLUS> MultiplicativeExpression) ({jjtThis.put("op", "add");}) #BinOp(2) ) |
+          ( (<MINUS> MultiplicativeExpression) ({jjtThis.put("op", "subtract");}) #BinOp(2) )
     )*
 ;
 
@@ -173,29 +166,18 @@ SubtractionExpression:
     #BinOp(2))
 ;
 */
-MultiplicativeExpression:
+
+
+MultiplicativeExpression #void:
     Factor
     (
-       MultExpression | DivExpression
+         ( (<TIMES> Factor) ({jjtThis.put("op", "multiplication");}) #BinOp(2) ) |
+         ( (<DIVIDE> Factor) ({jjtThis.put("op", "division");}) #BinOp(2) )
     )*
 ;
 
-MultExpression:
-    <TIMES>
-    Factor
-//    ({jjtThis.put("op","mult");})
-//    #BinOp(2)
-;
-
-DivExpression:
-    <DIVIDE>
-    Factor
-//    ({jjtthis.put("op","div");})
-//    #BinOp(2)
-;
-
-Factor:
-    <INTEGER> |
+Factor #void:
+    (<INTEGER> {jjtThis.put("value", lastConsumedToken.getImage());} ) #IntLiteral |
     <MINUS> Factor |
     <LEFTPARENTHESIS> AdditiveExpression <RIGHTPARENTHESIS>
 ;

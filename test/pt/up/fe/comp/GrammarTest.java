@@ -18,10 +18,10 @@ import org.junit.Test;
 public class GrammarTest {
 
     private static final String IMPORT = "ImportDeclaration";
-    private static final String MAIN_METHOD = "";
-    private static final String INSTANCE_METHOD = "";
-    private static final String STATEMENT = "";
-    private static final String EXPRESSION = "Expressionv2";
+    private static final String MAIN_METHOD = "MethodDeclaration";
+    private static final String INSTANCE_METHOD = "MethodDeclaration";
+    private static final String STATEMENT = "Statement";
+    private static final String EXPRESSION = "Expression";
 
     private static void noErrors(String code, String grammarRule) {
         if (grammarRule.isEmpty()) {

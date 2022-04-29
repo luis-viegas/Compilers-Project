@@ -6,12 +6,14 @@ TOKENS_ARE_NODES = false;
 SKIP : " " | "\t" | "\r" | "\n";
 
 TOKEN :
+    < LESS : "<" > |
+    < AND : "&&" > |
 	< PLUS : "+" > |
 	< MINUS : "-" > |
 	< TIMES : "*" > |
 	< DIVIDE : "/" > |
 	< EQUAL : "="> |
-	< NEGATION : "!"> |
+	< NOT : "!"> |
 	< INTEGER : (["0" - "9"])+ > |
     <STRING: "String"> |
     <MAIN: "main"> |
@@ -31,7 +33,7 @@ TOKEN :
     < THIS : "this"> |
     < NEW : "new"> |
 	< SEMICOLON : ";" > |
-	< COLON : "." > |
+	< POINT : "." > |
 	< INT : "int"> |
 	< BOOLEAN : "boolean"> |
 	< LEFTSQUAREBRACKET : "["> |
@@ -46,25 +48,19 @@ TOKEN :
 
 Start : Program ;
 
-Type:
-    (
-        < INT > |
-        < LEFTSQUAREBRACKET >
-        < RIGHTSQUAREBRACKET >
-    ) |
-    < BOOLEAN > |
-    < INT > |
-    < WORD >
-;
+Program:
+    ImportDeclaration
+    ClassDeclaration
+    <EOF> ;
 
-ImportDeclaration:
-    (
-        < IMPORT >
-        < WORD >
-        (<COLON> <WORD>)*
-        < SEMICOLON >
-    )*
-;
+ ImportDeclaration:
+     (
+         < IMPORT >
+         < WORD >
+         (<POINT> <WORD>)*
+         < SEMICOLON >
+     )*
+ ;
 
 ClassDeclaration:
     <CLASS>
@@ -84,8 +80,7 @@ VarDeclaration :
 
 MethodDeclaration:
     <PUBLIC>
-    (NormalFunction |
-    MainFunction)
+    (NormalFunction | MainFunction)
 ;
 
 MainFunction:
@@ -125,28 +120,43 @@ NormalFunction:
     <RIGHTBRACKET>
 ;
 
-Addv2 #void:
-    ExprTerm ( (< PLUS > ExprTerm) ({jjtThis.put("op", "add");}) #BinOp(2)
-    | (< MINUS > ExprTerm) ({jjtThis.put("op", "sub");}) #BinOp(2)  )*
-;
-
-ExprTerm #void:
-    (<INTEGER> {jjtThis.put("value", lastConsumedToken.getImage());} ) #IntLiteral
+Type:
+    (
+        < INT > |
+        < LEFTSQUAREBRACKET >
+        < RIGHTSQUAREBRACKET >
+    ) |
+    < BOOLEAN > |
+    < INT > |
+    < WORD >
 ;
 
 Expression:
     SCAN 2
-    <INTEGER> |
-    <TRUE> |
-    <FALSE> |
-    <THIS> |
-    ExpressionColon |
     (<NEW> ExpressionNew) |
-    (<NEGATION> Expression) |
+    Negation  |
     ExpressionBetweenParenthesis |
+    AndExpression #ExpressaoLogica |
     ExpressionArray |
-    AdditiveExpression #Expressaologica |
     <WORD>
+;
+
+Negation:
+    <NOT> Expression
+;
+
+AndExpression #void:
+    LessExpression
+    (
+          ( (<AND> LessExpression) ({jjtThis.put("op", "and");}) #BinOp(2) )
+    )*
+;
+
+LessExpression #void:
+    AdditiveExpression
+    (
+          ( (<LESS> AdditiveExpression) ({jjtThis.put("op", "less");}) #BinOp(2) )
+    )*
 ;
 
 AdditiveExpression #void:
@@ -157,17 +167,6 @@ AdditiveExpression #void:
     )*
 ;
 
-
-/*
-SubtractionExpression:
-    <MINUS>
-    MultiplicativeExpression
-    ({jjtThis.put("op","subtract");})
-    #BinOp(2))
-;
-*/
-
-
 MultiplicativeExpression #void:
     Factor
     (
@@ -177,16 +176,19 @@ MultiplicativeExpression #void:
 ;
 
 Factor #void:
+    SCAN 2
+    ExpressionColon |
     (<INTEGER> {jjtThis.put("value", lastConsumedToken.getImage());} ) #IntLiteral |
     <MINUS> Factor |
-    <LEFTPARENTHESIS> AdditiveExpression <RIGHTPARENTHESIS>
+    <LEFTPARENTHESIS> AdditiveExpression <RIGHTPARENTHESIS> |
+    <TRUE> |
+    <FALSE> |
+    <THIS>
 ;
 
 ExpressionArray:
-    (<WORD> | ExpressionBetweenParenthesis | ExpressionColon)
-    <LEFTSQUAREBRACKET>
-    Expression
-    <RIGHTSQUAREBRACKET>
+    (ExpressionBetweenParenthesis | ExpressionColon | <WORD>)
+    (<LEFTSQUAREBRACKET> Expression <RIGHTSQUAREBRACKET>)+
 ;
 
 
@@ -198,10 +200,10 @@ ExpressionBetweenParenthesis:
 
 ExpressionColon:
     (<THIS> | <WORD> | ExpressionBetweenParenthesis)
-    ((<COLON> <LENGTH>) |
+    <POINT>
+    (<LENGTH> |
     (
-        <WORD>
-        <LEFTPARENTHESIS>
+        <WORD><LEFTPARENTHESIS>
         (
             Expression
             (<COMMA> Expression)*
@@ -252,10 +254,6 @@ WhileStatement:
     Statement
 ;
 
-Program:
-    ImportDeclaration
-    ClassDeclaration
-    <EOF> ;
 
 
 

@@ -59,10 +59,10 @@ public interface SymbolTable {
      */
     default String print() {
         var builder = new StringBuilder();
-        /*
+
         builder.append("Class: " + getClassName() + "\n");
         var superClass = getSuper() != null ? getSuper() : "java.lang.Object";
-        builder.append("Super: " + superClass + "\n");*/
+        builder.append("Super: " + superClass + "\n");
         builder.append("\nImports:");
         var imports = getImports();
 

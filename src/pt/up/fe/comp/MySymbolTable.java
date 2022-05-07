@@ -11,10 +11,12 @@ public class MySymbolTable implements SymbolTable {
 
     List<String> imports;
     String className;
+    String superClass;
 
     public MySymbolTable() {
         this.imports = new ArrayList<>();
         this.className = "";
+        this.superClass = "";
     }
 
     public void addImport(String import_) {
@@ -35,9 +37,13 @@ public class MySymbolTable implements SymbolTable {
         return this.className;
     }
 
+    public void setSuper(String superClass) {
+        this.superClass = superClass;
+    }
+
     @Override
     public String getSuper() {
-        return null;
+        return this.superClass;
     }
 
     @Override

@@ -7,6 +7,7 @@ import java.util.Map;
 
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
+import pt.up.fe.comp.jmm.jasmin.JasminResult;
 import pt.up.fe.comp.jmm.parser.JmmParserResult;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsLogs;
@@ -47,8 +48,11 @@ public class Launcher {
 
         var analyser = new JmmAnalyser();
         JmmSemanticsResult analysisResult = analyser.semanticAnalysis(parserResult);
-
         TestUtils.noErrors(analysisResult);
+
+        AstToJasminStage astToJasminStage = new AstToJasminStage();
+        JasminResult jasminResult = astToJasminStage.toJasmin(analysisResult);
+        TestUtils.noErrors(jasminResult);
 
         // ... add remaining stages
     }

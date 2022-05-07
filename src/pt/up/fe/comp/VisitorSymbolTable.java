@@ -3,8 +3,6 @@ package pt.up.fe.comp;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.comp.jmm.report.Report;
-import pt.up.fe.comp.jmm.report.ReportType;
-import pt.up.fe.comp.jmm.report.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +12,13 @@ public class VisitorSymbolTable extends PreorderJmmVisitor<MySymbolTable, Boolea
     public VisitorSymbolTable() {
         reports = new ArrayList<>();
         addVisit("ImportDeclaration", this::visitImports);
+        addVisit("ClassDeclaration", this::visitClass);
+    }
+
+    private Boolean visitClass(JmmNode jmmNode, MySymbolTable mySymbolTable) {
+        mySymbolTable.setClassName(jmmNode.get("name"));
+        jmmNode.getOptional("super").ifPresent(mySymbolTable::setSuper);
+        return true;
     }
 
     private Boolean visitImports(JmmNode jmmNode, MySymbolTable mySymbolTable) {

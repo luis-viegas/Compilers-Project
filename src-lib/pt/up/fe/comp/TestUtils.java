@@ -321,7 +321,6 @@ public class TestUtils {
             noErrors(semanticsResult.getReports());
             return backend(semanticsResult);
         }
-
         // Otherwise, run OLLIR path
         var ollirResult = optimize(code, config);
         noErrors(ollirResult.getReports());

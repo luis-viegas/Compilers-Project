@@ -59,10 +59,10 @@ public interface SymbolTable {
      */
     default String print() {
         var builder = new StringBuilder();
-
+        /*
         builder.append("Class: " + getClassName() + "\n");
         var superClass = getSuper() != null ? getSuper() : "java.lang.Object";
-        builder.append("Super: " + superClass + "\n");
+        builder.append("Super: " + superClass + "\n");*/
         builder.append("\nImports:");
         var imports = getImports();
 
@@ -72,7 +72,7 @@ public interface SymbolTable {
             builder.append("\n");
             imports.forEach(fullImport -> builder.append(" - " + fullImport + "\n"));
         }
-
+        /*
         var fields = getFields();
         builder.append("\nFields:");
         if (fields.isEmpty()) {
@@ -97,7 +97,7 @@ public interface SymbolTable {
             // builder.append(paramsString + ")\n");
             builder.append("; params: ").append(paramsString);
             builder.append("\n");
-        }
+        }*/
 
         return builder.toString();
     }

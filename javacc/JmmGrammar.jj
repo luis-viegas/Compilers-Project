@@ -49,25 +49,27 @@ TOKEN :
 Start : Program ;
 
 Program:
-    ImportDeclaration
+    (ImportDeclaration)*
     ClassDeclaration
     <EOF> ;
 
  ImportDeclaration:
-     (
-         < IMPORT >
-         < WORD >
-         (<POINT> <WORD>)*
-         < SEMICOLON >
-     )*
+     < IMPORT >
+     < WORD > {jjtThis.put("name", lastConsumedToken.getImage());}
+     (SubImport)*
+     < SEMICOLON >
  ;
+
+ SubImport:
+     <POINT> <WORD> {jjtThis.put("name", lastConsumedToken.getImage());}
+;
 
 ClassDeclaration:
     <CLASS>
     <WORD>
     (<EXTENDS> <WORD> )?
     <LEFTBRACKET>
-    (VarDeclaration)*
+    (SCAN 2 VarDeclaration)*
     (MethodDeclaration)*
     <RIGHTBRACKET>
 ;
@@ -92,7 +94,7 @@ MainFunction:
     <WORD>
     <RIGHTPARENTHESIS>
     <LEFTBRACKET>
-    (VarDeclaration)*
+    (SCAN 2 VarDeclaration)*
     (Statement)*
     <RIGHTBRACKET>
 ;
@@ -112,7 +114,7 @@ NormalFunction:
     )?
     <RIGHTPARENTHESIS>
     <LEFTBRACKET>
-    (VarDeclaration)*
+    (SCAN 2 VarDeclaration)*
     (Statement)*
     <RETURN>
     Expression
@@ -218,22 +220,24 @@ ExpressionNew:
 ;
 
 Statement:
-    (
-        <WORD>
-        (( <EQUAL> Expression) |
-        (
+    (<LEFTBRACKET> Statement <RIGHTBRACKET>) |
+    IfStatement |
+    WhileStatement |
+    SCAN 2 Assign |
+    (Expression <SEMICOLON>)
+;
+
+Assign:
+    SCAN 2
+    (<WORD> <EQUAL> Expression |
+    <WORD> (
             <LEFTSQUAREBRACKET>
             Expression
             <RIGHTSQUAREBRACKET>
             <EQUAL>
             Expression
-        ))
-        <SEMICOLON>
-    ) |
-    (<LEFTBRACKET> Statement <RIGHTBRACKET>) |
-    IfStatement |
-    WhileStatement |
-    (Expression <SEMICOLON>)
+        )
+        <SEMICOLON>)
 ;
 
 IfStatement:

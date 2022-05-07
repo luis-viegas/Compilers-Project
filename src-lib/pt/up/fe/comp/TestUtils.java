@@ -11,6 +11,7 @@ import java.util.Properties;
 
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
+import pt.up.fe.comp.jmm.ast2jasmin.AstToJasmin;
 import pt.up.fe.comp.jmm.jasmin.JasminBackend;
 import pt.up.fe.comp.jmm.jasmin.JasminResult;
 import pt.up.fe.comp.jmm.ollir.JmmOptimization;
@@ -27,11 +28,6 @@ import pt.up.fe.specs.util.SpecsSystem;
 public class TestUtils {
 
     private static final Properties CONFIG = TestUtils.loadProperties("config.properties");
-
-    // private static final Properties PARSER_CONFIG = TestUtils.loadProperties("parser.properties");
-    // private static final Properties ANALYSIS_CONFIG = TestUtils.loadProperties("analysis.properties");
-    // private static final Properties OPTIMIZE_CONFIG = TestUtils.loadProperties("optimize.properties");
-    // private static final Properties BACKEND_CONFIG = TestUtils.loadProperties("backend.properties");
 
     public static Properties loadProperties(String filename) {
         try {
@@ -64,12 +60,25 @@ public class TestUtils {
         return parser.parse(code, config);
     }
 
+    private static String getClassFromConfig(String property) {
+        // Get class name
+        String className = CONFIG.getProperty(property);
+
+        // Check if empty
+        if (className.isBlank()) {
+            throw new RuntimeException("Possible problem in file 'config.properties', property '" + property
+                    + "' is empty. Please provide a fully qualified class name for that compilation stage.");
+        }
+
+        return className;
+    }
+
     public static JmmParser getJmmParser() {
 
         SpecsSystem.programStandardInit();
 
         // Get Parser class
-        String parserClassName = CONFIG.getProperty("ParserClass");
+        String parserClassName = getClassFromConfig("ParserClass");
 
         try {
             // Get class with main
@@ -88,7 +97,7 @@ public class TestUtils {
         SpecsSystem.programStandardInit();
 
         // Get Analysis class
-        String analysisClassName = CONFIG.getProperty("AnalysisClass");
+        String analysisClassName = getClassFromConfig("AnalysisClass");
 
         try {
 
@@ -108,7 +117,7 @@ public class TestUtils {
         SpecsSystem.programStandardInit();
 
         // Get Optimization class
-        String optimizeClassName = CONFIG.getProperty("OptimizationClass");
+        String optimizeClassName = getClassFromConfig("OptimizationClass");
 
         try {
 
@@ -130,7 +139,7 @@ public class TestUtils {
         SpecsSystem.programStandardInit();
 
         // Get Backend class
-        String backendClassName = CONFIG.getProperty("BackendClass");
+        String backendClassName = getClassFromConfig("BackendClass");
 
         try {
             // Get class with main
@@ -146,6 +155,39 @@ public class TestUtils {
         }
     }
 
+    public static boolean hasAstToJasminClass() {
+        return CONFIG.getProperty("AstToJasminClass") != null;
+    }
+
+    public static AstToJasmin getAstToJasmin() {
+
+        SpecsSystem.programStandardInit();
+
+        // Get Optimization class
+        String astToJasminClassName = getClassFromConfig("AstToJasminClass");
+
+        try {
+
+            // Get class with main
+            Class<?> astToJasminClass = Class.forName(astToJasminClassName);
+
+            // It is expected that the AstToJasmin class can be instantiated without arguments
+            AstToJasmin astToJasmin = (AstToJasmin) astToJasminClass.getConstructor().newInstance();
+            return astToJasmin;
+
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Could not instantiate AstToJasmin from class '" + astToJasminClassName + "'",
+                    e);
+        }
+    }
+
+    /**
+     * Only calls the `JmmAnalysis` stage to analyse the AST.
+     * 
+     * @param parserResult
+     * @return
+     */
     public static JmmSemanticsResult analyse(JmmParserResult parserResult) {
 
         JmmAnalysis analysis = getJmmAnalysis();
@@ -153,16 +195,36 @@ public class TestUtils {
         return analysis.semanticAnalysis(parserResult);
     }
 
-    public static JmmSemanticsResult analyse(String code) {
-        return analyse(code, Collections.emptyMap());
+    /**
+     * Receives a string o Java-- code and calls JmmParser and JmmAnalysis stages to generate and analyse the AST.
+     * Assumes there is no configuration.
+     * 
+     * @param jmmCode
+     * @return
+     */
+    public static JmmSemanticsResult analyse(String jmmCode) {
+        return analyse(jmmCode, Collections.emptyMap());
     }
 
-    public static JmmSemanticsResult analyse(String code, Map<String, String> config) {
-        var parseResults = TestUtils.parse(code, config);
+    /**
+     * Receives a string o Java-- code and calls JmmParser and JmmAnalysis stages to generate and analyse the AST.
+     * 
+     * @param jmmCode
+     * @param config
+     * @return
+     */
+    public static JmmSemanticsResult analyse(String jmmCode, Map<String, String> config) {
+        var parseResults = TestUtils.parse(jmmCode, config);
         noErrors(parseResults.getReports());
         return analyse(parseResults);
     }
 
+    /**
+     * Only calls the `JmmOptimization` stage to optimize and generate the OLLIR code.
+     * 
+     * @param semanticsResult
+     * @return
+     */
     public static OllirResult optimize(JmmSemanticsResult semanticsResult) {
 
         JmmOptimization optimization = getJmmOptimization();
@@ -177,16 +239,37 @@ public class TestUtils {
 
     }
 
-    public static OllirResult optimize(String code, Map<String, String> config) {
-        var semanticsResult = analyse(code, config);
+    /**
+     * Receives a string o Java-- code and calls JmmParser and JmmAnalysis stages to generate and analyse the AST, and
+     * JmmOptimization to optimize and generate OLLIR code.
+     * 
+     * @param jmmCode
+     * @param config
+     * @return
+     */
+    public static OllirResult optimize(String jmmCode, Map<String, String> config) {
+        var semanticsResult = analyse(jmmCode, config);
         noErrors(semanticsResult.getReports());
         return optimize(semanticsResult);
     }
 
-    public static OllirResult optimize(String code) {
-        return optimize(code, Collections.emptyMap());
+    /**
+     * Receives a string o Java-- code and calls JmmParser and JmmAnalysis stages to generate and analyse the AST, and
+     * JmmOptimization to optimize and generate OLLIR code. Assumes there is no configuration.
+     * 
+     * @param jmmCode
+     * @return
+     */
+    public static OllirResult optimize(String jmmCode) {
+        return optimize(jmmCode, Collections.emptyMap());
     }
 
+    /**
+     * Only calls the `JasminBackend` stage to generate Jasmin code.
+     * 
+     * @param ollirResult
+     * @return
+     */
     public static JasminResult backend(OllirResult ollirResult) {
         JasminBackend backend = getJasminBackend();
 
@@ -196,11 +279,50 @@ public class TestUtils {
 
     }
 
-    public static JasminResult backend(String code) {
-        return backend(code, Collections.emptyMap());
+    /**
+     * Only calls the `JasminBackend` stage to generate Jasmin code.
+     * 
+     * @param ollirResult
+     * @return
+     */
+    public static JasminResult backend(JmmSemanticsResult semanticsResult) {
+        var astToJasmin = getAstToJasmin();
+
+        // Optimize
+        semanticsResult = astToJasmin.optimize(semanticsResult);
+
+        // Convert
+        var jasminResult = astToJasmin.toJasmin(semanticsResult);
+
+        return jasminResult;
     }
 
+    /**
+     * Receives a string o Java-- code and calls all the stages to generate Jasmin code. Assumes there is no
+     * configuration.
+     * 
+     * @param jmmCode
+     * @return
+     */
+    public static JasminResult backend(String jmmCode) {
+        return backend(jmmCode, Collections.emptyMap());
+    }
+
+    /**
+     * Receives a string o Java-- code and calls all the stages to generate Jasmin code.
+     * 
+     * @param jmmCode
+     * @return
+     */
     public static JasminResult backend(String code, Map<String, String> config) {
+        // AstToJasmin path has priority
+        if (hasAstToJasminClass()) {
+            var semanticsResult = analyse(code, config);
+            noErrors(semanticsResult.getReports());
+            return backend(semanticsResult);
+        }
+
+        // Otherwise, run OLLIR path
         var ollirResult = optimize(code, config);
         noErrors(ollirResult.getReports());
         return backend(ollirResult);
@@ -320,4 +442,27 @@ public class TestUtils {
         return toConfig(Arrays.asList(args));
     }
 
+    /**
+     * Finds an exception of the given class inside the chain of causes of the given exception. If the given exception
+     * is an instance of the given class, returns the exception itself. Returns null if no exception of the given class
+     * is found.
+     * 
+     * @param <T>
+     * @param e
+     * @param expectedClass
+     * @return
+     */
+    public static <T extends Throwable> T getException(Throwable e, Class<T> expectedClass) {
+        Throwable currentException = e;
+
+        while (currentException != null) {
+            if (expectedClass.isInstance(currentException)) {
+                return expectedClass.cast(currentException);
+            }
+
+            currentException = currentException.getCause();
+        }
+
+        return null;
+    }
 }

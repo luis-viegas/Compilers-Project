@@ -65,7 +65,7 @@ public class GrammarTest {
 
     @Test
     public void testVarDeclString() {
-        noErrors("String aString;", "VarDecl");
+        noErrors("String aString;", "VarDeclaration");
     }
 
     @Test

@@ -53,36 +53,30 @@ Program:
     ClassDeclaration
     <EOF> ;
 
- ImportDeclaration :
-         < IMPORT >
-         FirstImportID
-         (ImportID)*
-         < SEMICOLON >
+ ImportDeclaration:
+     < IMPORT >
+     < WORD > {jjtThis.put("name", lastConsumedToken.getImage());}
+     (SubImport)*
+     < SEMICOLON >
  ;
 
-FirstImportID #id :
-    <WORD> {jjtThis.put("value", lastConsumedToken.getImage());}
-;
-
-
-ImportID #id :
-    <POINT>
-    <WORD> {jjtThis.put("value", lastConsumedToken.getImage());}
+ SubImport:
+     <POINT> <WORD> {jjtThis.put("name", lastConsumedToken.getImage());}
 ;
 
 ClassDeclaration:
     <CLASS>
-    <WORD> {jjtThis.put("className", lastConsumedToken.getImage());}
-    (<EXTENDS> <WORD> {jjtThis.put("classExtends", lastConsumedToken.getImage());})?
+    <WORD> {jjtThis.put("name", lastConsumedToken.getImage());}
+    (<EXTENDS> <WORD> {jjtThis.put("super", lastConsumedToken.getImage());} )?
     <LEFTBRACKET>
-    (VarDeclaration)*
+    (SCAN 2 VarDeclaration)*
     (MethodDeclaration)*
     <RIGHTBRACKET>
 ;
 
 VarDeclaration :
     Type
-    < WORD > {jjtThis.put("id", lastConsumedToken.getImage());}
+    < WORD > {jjtThis.put("name", lastConsumedToken.getImage());}
     < SEMICOLON>
 ;
 
@@ -92,42 +86,32 @@ MethodDeclaration:
 ;
 
 MainFunction:
-    <STATIC>
-    <VOID> {jjtThis.put("Return", "void");}
-    <MAIN> {jjtThis.put("functionName", lastConsumedToken.getImage());}
+    <STATIC><VOID><MAIN>
     <LEFTPARENTHESIS>
-    <STRING> {jjtThis.put("paramType", "StringArray");}
+    <STRING>
     <LEFTSQUAREBRACKET>
     <RIGHTSQUAREBRACKET>
-    (<WORD> {jjtThis.put("parameters", lastConsumedToken.getImage());}) #argument
+    <WORD>
     <RIGHTPARENTHESIS>
     <LEFTBRACKET>
-    (VarDeclaration)*
+    (SCAN 2 VarDeclaration)*
     (Statement)*
     <RIGHTBRACKET>
 ;
-/*
-Argument:
-    Type
-    <WORD> {jjtThis.put("id", lastConsumedToken.getImage());}
-;
-*/
-
-Arguments #void:
-    (Type
-    <WORD> {jjtThis.put("id", lastConsumedToken.getImage());}) #param(1)
-    (
-        (<COMMA>
-        Type
-        <WORD> {jjtThis.put("id", lastConsumedToken.getImage());}) #param(1)
-    )*
-;
 
 NormalFunction:
-    Type {jjtThis.put("Return", lastConsumedToken.getImage());}
-    <WORD> {jjtThis.put("functionName", lastConsumedToken.getImage());}
+    Type
+    <WORD>
     <LEFTPARENTHESIS>
-    (Arguments)?
+    (
+        Type
+        <WORD>
+        (
+            <COMMA>
+            Type
+            <WORD>
+        )*
+    )?
     <RIGHTPARENTHESIS>
     <LEFTBRACKET>
     (SCAN 2 VarDeclaration)*
@@ -138,23 +122,26 @@ NormalFunction:
     <RIGHTBRACKET>
 ;
 
-Type #void:
+Type:
     SCAN 2
-    IntArray |
-    < BOOLEAN > #bool |
-    < INT > #IntLiteral |
-    <STRING> #stringObject |
-    < WORD > #object
+    <INT> < LEFTSQUAREBRACKET > < RIGHTSQUAREBRACKET > {jjtThis.put("tipo", "array");}|
+    < BOOLEAN > {jjtThis.put("tipo", lastConsumedToken.getImage());}|
+    < INT > {jjtThis.put("tipo", lastConsumedToken.getImage());}|
+    < WORD > {jjtThis.put("tipo", lastConsumedToken.getImage());}
 ;
-IntArray:
-    < INT >
-    < LEFTSQUAREBRACKET >
-    < RIGHTSQUAREBRACKET >
-;
-
 
 Expression:
-    AndExpression
+    SCAN 2
+    (<NEW> ExpressionNew) |
+    Negation  |
+    ExpressionBetweenParenthesis |
+    AndExpression #ExpressaoLogica |
+    ExpressionArray |
+    <WORD>
+;
+
+Negation:
+    <NOT> Expression
 ;
 
 AndExpression #void:
@@ -180,106 +167,84 @@ AdditiveExpression #void:
 ;
 
 MultiplicativeExpression #void:
-    NewExpression
+    Factor
     (
-         ( (<TIMES> NewExpression) ({jjtThis.put("op", "multiplication");}) #BinOp(2) ) |
-         ( (<DIVIDE> NewExpression) ({jjtThis.put("op", "division");}) #BinOp(2) )
+         ( (<TIMES> Factor) ({jjtThis.put("op", "multiplication");}) #BinOp(2) ) |
+         ( (<DIVIDE> Factor) ({jjtThis.put("op", "division");}) #BinOp(2) )
     )*
 ;
 
-NewExpression #void:
-    SCAN 2
-    <NEW> <INT> <LEFTSQUAREBRACKET> Negation <RIGHTSQUAREBRACKET> |
-    <NEW> Negation |
-    Negation
-;
-
-Negation #void:
-    <NOT> Factor |
-    Factor
-;
-
 Factor #void:
-    TerminalExpr
-    (AfterFactor)*
+    SCAN 2
+    ExpressionColon |
+    (<INTEGER> {jjtThis.put("value", lastConsumedToken.getImage());} ) #IntLiteral |
+    <MINUS> Factor |
+    <LEFTPARENTHESIS> AdditiveExpression <RIGHTPARENTHESIS> |
+    <TRUE> |
+    <FALSE> |
+    <THIS>
 ;
 
-AfterFactor #void:
-    ArrayAccess |
-    (SCAN 2 LengthGet | MemberFunction)
+ExpressionArray:
+    (ExpressionBetweenParenthesis | ExpressionColon | <WORD>)
+    (<LEFTSQUAREBRACKET> Expression <RIGHTSQUAREBRACKET>)+
 ;
 
-ArrayAccess #void:
-    (<LEFTSQUAREBRACKET> ({jjtThis.put("op", "index"); }) Expression <RIGHTSQUAREBRACKET>) #ArrayIndex //TODO   PERGUNTAR PQ BINOP DA ERRO
-;
 
-LengthGet #void:
-    <POINT>(<LENGTH> #Len)
-;
-
-MemberFunction #void:
-    <POINT>(<WORD> {jjtThis.put("id", lastConsumedToken.getImage());}) #MemberFunc <LEFTPARENTHESIS>
-    (FuncArguments)?
+ExpressionBetweenParenthesis:
+    <LEFTPARENTHESIS>
+    Expression
     <RIGHTPARENTHESIS>
 ;
 
-FuncArguments #void:
-    (Expression
-    (<COMMA> Expression)*) #FuncArgs
+ExpressionColon:
+    (<THIS> | <WORD> | ExpressionBetweenParenthesis)
+    <POINT>
+    (<LENGTH> |
+    (
+        <WORD><LEFTPARENTHESIS>
+        (
+            Expression
+            (<COMMA> Expression)*
+        )?
+        <RIGHTPARENTHESIS>
+    ))
 ;
 
-TerminalExpr #void:
-    (<INTEGER> {jjtThis.put("value", lastConsumedToken.getImage());} ) #IntLiteral |
-    (<LEFTPARENTHESIS> AndExpression <RIGHTPARENTHESIS>) |
-    <MINUS> TerminalExpr |
-    (<TRUE>  {jjtThis.put("value", "true");} ) #BoolTrue |
-    (<FALSE>  {jjtThis.put("value", "false");} ) #BoolFalse |
-    <THIS> |
-    (<WORD> {jjtThis.put("id", lastConsumedToken.getImage());} ) #Identifier
+ExpressionNew:
+    ( <INT> <LEFTSQUAREBRACKET> Expression <RIGHTSQUAREBRACKET>) |
+    (<WORD> <LEFTPARENTHESIS><RIGHTPARENTHESIS>)
 ;
 
-Statement #void:
-    (<LEFTBRACKET> (Statement)* <RIGHTBRACKET>) | // TODO PROBLEMAS WITH AST
+Statement:
+    (<LEFTBRACKET> Statement <RIGHTBRACKET>) |
     IfStatement |
     WhileStatement |
-    ExprOrAssignment
+    SCAN 2 Assign |
+    (Expression <SEMICOLON>)
 ;
 
-ExprOrAssignment:
+Assign:
     SCAN 2
-    Expression <SEMICOLON> |  // TODO PROBLEMAS WITH stmtarray (entra em expression pq expression pode ser um array) and AST in teststmtscope
-    Assignment |
-    ArrayAssignment
-;
-
-Assignment:
-        <WORD> {jjtThis.put("id", lastConsumedToken.getImage());}
-        <EQUAL>
-        Expression
-        <SEMICOLON>
-;
-
-ArrayAssignment:
-    <WORD> {jjtThis.put("id", lastConsumedToken.getImage());}
-    <LEFTSQUAREBRACKET>
-    Expression #Index
-    <RIGHTSQUAREBRACKET>
-    <EQUAL>
-    Expression
-    <SEMICOLON>
+    (<WORD> <EQUAL> Expression |
+    <WORD> (
+            <LEFTSQUAREBRACKET>
+            Expression
+            <RIGHTSQUAREBRACKET>
+            <EQUAL>
+            Expression
+        )
+        <SEMICOLON>)
 ;
 
 IfStatement:
     <IF>
-    Condition
-    Statement #Then
-    <ELSE>
-    Statement
-;
-Condition:
     <LEFTPARENTHESIS>
     Expression
     <RIGHTPARENTHESIS>
+    Statement
+    <ELSE>
+    Statement
 ;
 
 WhileStatement:

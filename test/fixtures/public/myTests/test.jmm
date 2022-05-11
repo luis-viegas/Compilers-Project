@@ -1,20 +1,8 @@
-import a;
-
-class Test {
+class test {
     int a;
-    boolean b;
 
-    public int func(int a) {
-        int temp;
-
-        while (false)
-            a = new thing();
-            b = height.length;
-
-        new object();
-
-        ola[12] = 12;
-
-        return this;
+    public int func() {
+        a = 1+2;
+        return a;
     }
 }

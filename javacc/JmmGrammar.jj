@@ -86,26 +86,29 @@ VarDeclaration :
     < SEMICOLON>
 ;
 
-MethodDeclaration:
+MethodDeclaration #void:
     <PUBLIC>
     (NormalFunction | MainFunction)
 ;
 
-MainFunction:
-    <STATIC>
+MainFunction #Function:
+    <STATIC> {jjtThis.put("isStatic", "true");}
     <VOID> {jjtThis.put("Return", "void");}
     <MAIN> {jjtThis.put("functionName", lastConsumedToken.getImage());}
     <LEFTPARENTHESIS>
-    <STRING> {jjtThis.put("paramType", "StringArray");}
-    <LEFTSQUAREBRACKET>
-    <RIGHTSQUAREBRACKET>
-    (<WORD> {jjtThis.put("parameters", lastConsumedToken.getImage());}) #argument
+    (MainArgs)
+    ( <WORD> {jjtThis.put("parameters", lastConsumedToken.getImage());}) #param(1)
     <RIGHTPARENTHESIS>
     <LEFTBRACKET>
     (VarDeclaration)*
     (Statement)*
     <RIGHTBRACKET>
 ;
+
+MainArgs #Type:
+    <STRING> <LEFTSQUAREBRACKET> <RIGHTSQUAREBRACKET> {jjtThis.put("tipo", "String"); jjtThis.put("isArray", "true");}
+;
+
 /*
 Argument:
     Type
@@ -123,8 +126,8 @@ Arguments #void:
     )*
 ;
 
-NormalFunction:
-    Type {jjtThis.put("Return", lastConsumedToken.getImage());}
+NormalFunction #Function:
+    Type {jjtThis.put("Return", lastConsumedToken.getImage());jjtThis.put("isStatic", "false");}
     <WORD> {jjtThis.put("functionName", lastConsumedToken.getImage());}
     <LEFTPARENTHESIS>
     (Arguments)?
@@ -138,13 +141,12 @@ NormalFunction:
     <RIGHTBRACKET>
 ;
 
-Type #void:
+Type:
     SCAN 2
-    IntArray |
-    < BOOLEAN > #bool |
-    < INT > #IntLiteral |
-    <STRING> #stringObject |
-    < WORD > #object
+    <INT> < LEFTSQUAREBRACKET > < RIGHTSQUAREBRACKET > {jjtThis.put("tipo", "int"); jjtThis.put("isArray", "true");} |
+    < BOOLEAN > {jjtThis.put("tipo", lastConsumedToken.getImage()); jjtThis.put("isArray", "false");} |
+    < INT > {jjtThis.put("tipo", lastConsumedToken.getImage()); jjtThis.put("isArray", "false");} |
+    (< WORD > | <STRING>) {jjtThis.put("tipo", lastConsumedToken.getImage()); jjtThis.put("isArray", "false");}
 ;
 IntArray:
     < INT >
@@ -153,7 +155,7 @@ IntArray:
 ;
 
 
-Expression:
+Expression #void:
     AndExpression
 ;
 
@@ -210,7 +212,7 @@ AfterFactor #void:
 ;
 
 ArrayAccess #void:
-    (<LEFTSQUAREBRACKET> ({jjtThis.put("op", "index"); }) Expression <RIGHTSQUAREBRACKET>) #ArrayIndex //TODO   PERGUNTAR PQ BINOP DA ERRO
+    (<LEFTSQUAREBRACKET> ({jjtThis.put("op", "index"); }) Expression <RIGHTSQUAREBRACKET>) #ArrayAccess(2) //TODO   PERGUNTAR PQ BINOP DA ERRO
 ;
 
 LengthGet #void:
@@ -239,17 +241,17 @@ TerminalExpr #void:
 ;
 
 Statement #void:
-    (<LEFTBRACKET> (Statement)* <RIGHTBRACKET>) | // TODO PROBLEMAS WITH AST
+    (<LEFTBRACKET> (Statement)* <RIGHTBRACKET>) #ScopeStmt | // TODO PROBLEMAS WITH AST
     IfStatement |
     WhileStatement |
     ExprOrAssignment
 ;
 
-ExprOrAssignment:
+ExprOrAssignment #void:
     SCAN 2
-    Expression <SEMICOLON> |  // TODO PROBLEMAS WITH stmtarray (entra em expression pq expression pode ser um array) and AST in teststmtscope
     Assignment |
-    ArrayAssignment
+    ArrayAssignment |
+    (Expression <SEMICOLON>) #ExprStmt   // TODO PROBLEMAS WITH stmtarray (entra em expression pq expression pode ser um array) and AST in teststmtscope
 ;
 
 Assignment:

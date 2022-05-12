@@ -212,7 +212,7 @@ AfterFactor #void:
 ;
 
 ArrayAccess #void:
-    (<LEFTSQUAREBRACKET> ({jjtThis.put("op", "index"); }) Expression <RIGHTSQUAREBRACKET>) #ArrayAccess(2) //TODO   PERGUNTAR PQ BINOP DA ERRO
+    (<LEFTSQUAREBRACKET> ({jjtThis.put("op", "index"); }) Expression <RIGHTSQUAREBRACKET>) #ArrayAccess(2)
 ;
 
 LengthGet #void:
@@ -232,16 +232,16 @@ FuncArguments #void:
 
 TerminalExpr #void:
     (<INTEGER> {jjtThis.put("value", lastConsumedToken.getImage());} ) #IntLiteral |
-    (<LEFTPARENTHESIS> AndExpression <RIGHTPARENTHESIS>) |
-    <MINUS> TerminalExpr |
+    (<LEFTPARENTHESIS> AndExpression <RIGHTPARENTHESIS>) #BetweenParenthesis |
+    (<MINUS> TerminalExpr) #Negative |
     (<TRUE>  {jjtThis.put("value", "true");} ) #BoolTrue |
     (<FALSE>  {jjtThis.put("value", "false");} ) #BoolFalse |
-    <THIS> |
+    <THIS> #ThisPointer |
     (<WORD> {jjtThis.put("id", lastConsumedToken.getImage());} ) #Identifier
 ;
 
 Statement #void:
-    (<LEFTBRACKET> (Statement)* <RIGHTBRACKET>) #ScopeStmt | // TODO PROBLEMAS WITH AST
+    (<LEFTBRACKET> (Statement)* <RIGHTBRACKET>) #ScopeStmt |
     IfStatement |
     WhileStatement |
     ExprOrAssignment
@@ -251,17 +251,18 @@ ExprOrAssignment #void:
     SCAN 2
     Assignment |
     ArrayAssignment |
-    (Expression <SEMICOLON>) #ExprStmt   // TODO PROBLEMAS WITH stmtarray (entra em expression pq expression pode ser um array) and AST in teststmtscope
+    (Expression <SEMICOLON>) #ExprStmt
 ;
 
 Assignment:
-        <WORD> {jjtThis.put("id", lastConsumedToken.getImage());}
-        <EQUAL>
-        Expression
-        <SEMICOLON>
+    <WORD> {jjtThis.put("id", lastConsumedToken.getImage());}
+    <EQUAL>
+    Expression
+    <SEMICOLON>
 ;
 
 ArrayAssignment:
+    SCAN 2
     <WORD> {jjtThis.put("id", lastConsumedToken.getImage());}
     <LEFTSQUAREBRACKET>
     Expression #Index

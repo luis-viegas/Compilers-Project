@@ -70,7 +70,7 @@ public class GrammarTest {
 
     @Test
     public void testMainMethodEmpty() {
-        noErrors("public static void main(String[] args) {}", MAIN_METHOD);
+        noErrors("public static void main(String[] args) {foo.hello();}", MAIN_METHOD);
     }
 
     @Test
@@ -81,7 +81,7 @@ public class GrammarTest {
 
     @Test
     public void testStmtScope() {
-        noErrors("{a; b; c;}", STATEMENT);
+        noErrors("{a ; b ; c ; }", STATEMENT);
     }
 
     @Test

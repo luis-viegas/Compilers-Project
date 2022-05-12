@@ -16,29 +16,41 @@ public class VisitorSymbolTable extends PreorderJmmVisitor<MySymbolTable, Boolea
         addVisit("ImportDeclaration", this::visitImports);
         addVisit("ClassDeclaration", this::visitClass);
         addVisit("VarDeclaration", this::visitVars);
+        addVisit("Statement",this::visitStatement);
     }
 
+    private Boolean visitStatement(JmmNode jmmNode,MySymbolTable mySymbolTable)
+    {
+
+        return true;
+    }
     private Boolean visitVars(JmmNode jmmNode, MySymbolTable mySymbolTable)
     {
-        String fieldName = jmmNode.get("name");
+        String fieldName = jmmNode.get("id");
         String tipo = jmmNode.getJmmChild(0).get("tipo");
-        Boolean isArray=false;
-        if (tipo.equals("array")) isArray=true;
-        Type type = new Type(tipo,isArray);
+        String isArray = jmmNode.getJmmChild(0).get("isArray");
+        Boolean arrayBool = false;
+        if (isArray.equals("true")) arrayBool=true;
+        Type type = new Type(tipo,arrayBool);
         mySymbolTable.setFields(new Symbol(type,fieldName));
         return true;
     }
     private Boolean visitClass(JmmNode jmmNode, MySymbolTable mySymbolTable) {
-        mySymbolTable.setClassName(jmmNode.get("name"));
+        mySymbolTable.setClassName(jmmNode.get("className"));
         jmmNode.getOptional("super").ifPresent(mySymbolTable::setSuper);
         return true;
     }
 
     private Boolean visitImports(JmmNode jmmNode, MySymbolTable mySymbolTable) {
-        StringBuilder imports = new StringBuilder(jmmNode.get("name"));
-
+        StringBuilder imports = new StringBuilder();
+        int i = 0;
         for (JmmNode node: jmmNode.getChildren()) {
-            imports.append(".").append(node.get("name"));
+           if(i==0)
+           { imports.append(node.get("value"));
+           i++;}
+           else {
+               imports.append(".").append(node.get("value"));
+           }
         }
 
         mySymbolTable.addImport(imports.toString());
@@ -47,7 +59,7 @@ public class VisitorSymbolTable extends PreorderJmmVisitor<MySymbolTable, Boolea
     private Boolean visitMethods(JmmNode jmmNode,MySymbolTable mySymbolTable)
     {
         for (JmmNode node: jmmNode.getChildren()) {
-
+            visit(node,mySymbolTable);
         }
         return true;
     }

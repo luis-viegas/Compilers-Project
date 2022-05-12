@@ -24,8 +24,8 @@ public class AstToJasminStage implements AstToJasmin {
         addSuperName(semanticsResult);
         addClassName(semanticsResult);
         addSuperName(semanticsResult);
-        // addHeaderName(semanticsResult);
-        //addVarName(semanticsResult);
+        addVarName(semanticsResult);
+        addHeaderName(semanticsResult);
         addMethodName(semanticsResult);
 
         return new JasminResult(semanticsResult.getSymbolTable().getClassName(), jasminCode.toString(), reports);
@@ -36,20 +36,41 @@ public class AstToJasminStage implements AstToJasmin {
                 "         aload_0\n" +
                 "         invokespecial java/lang/Object/<init>()V\n" +
                 "         return\n" +
-                ".end method");
+                ".end method \n");
     }
     public void addVarName(JmmSemanticsResult semanticsResult)
     {
-       /* List<Symbol> vars = semanticsResult.getSymbolTable().getFields();
+        List<Symbol> vars = semanticsResult.getSymbolTable().getFields();
         for(int i =0;i<vars.size();i++)
         {
-        if(jasminCode.append(vars.get(i).getType().equals("int"))
-        {
-        jasminCode.append("aload"?);
-        }
+            jasminCode.append(".field ");
+            jasminCode.append(vars.get(i).getName());
+            if(vars.get(i).getType().getName().equals("int"))
+            {
+                if(vars.get(i).getType().isArray())
+                {
+                    jasminCode.append(" [I");
+                }
+                else {jasminCode.append(" I");}
+            }
+            if(vars.get(i).getType().getName().equals("bool"))
+            {
+                if(vars.get(i).getType().isArray())
+                {
+                    jasminCode.append(" [B");
+                }
+                else {jasminCode.append(" B");}
+            }
+            if(vars.get(i).getType().getName().equals("String"))
+            {
+                if(vars.get(i).getType().isArray())
+                {
+                    jasminCode.append(" [S");
+                }
+                else {jasminCode.append(" S");}
+            }
         }
 
-    */
 
     }
     public void addImportName(JmmSemanticsResult semanticsResult){

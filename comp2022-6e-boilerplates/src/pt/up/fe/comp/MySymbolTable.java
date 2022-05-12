@@ -59,7 +59,7 @@ public class MySymbolTable implements SymbolTable {
 
     @Override
     public List<Symbol> getFields() {
-        return null;
+        return this.fields;
     }
 
     @Override

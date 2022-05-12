@@ -17,6 +17,7 @@ public class VisitorSymbolTable extends PreorderJmmVisitor<MySymbolTable, Boolea
         addVisit("ClassDeclaration", this::visitClass);
         addVisit("VarDeclaration", this::visitVars);
         addVisit("Statement",this::visitStatement);
+        addVisit("MethodDeclaration",this::visitMethods);
     }
 
     private Boolean visitStatement(JmmNode jmmNode,MySymbolTable mySymbolTable)
@@ -24,6 +25,7 @@ public class VisitorSymbolTable extends PreorderJmmVisitor<MySymbolTable, Boolea
 
         return true;
     }
+
     private Boolean visitVars(JmmNode jmmNode, MySymbolTable mySymbolTable)
     {
         String fieldName = jmmNode.get("id");
@@ -56,6 +58,7 @@ public class VisitorSymbolTable extends PreorderJmmVisitor<MySymbolTable, Boolea
         mySymbolTable.addImport(imports.toString());
         return true;
     }
+
     private Boolean visitMethods(JmmNode jmmNode,MySymbolTable mySymbolTable)
     {
         for (JmmNode node: jmmNode.getChildren()) {

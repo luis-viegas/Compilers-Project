@@ -100,7 +100,7 @@ MainFunction #Function:
     ( <WORD> {jjtThis.put("parameters", lastConsumedToken.getImage());}) #param(1)
     <RIGHTPARENTHESIS>
     <LEFTBRACKET>
-    (VarDeclaration)*
+    (SCAN 2 VarDeclaration)*
     (Statement)*
     <RIGHTBRACKET>
 ;

@@ -1,0 +1,8 @@
+class test {
+    int a;
+
+    public int func() {
+        a = 1+2;
+        return a;
+    }
+}

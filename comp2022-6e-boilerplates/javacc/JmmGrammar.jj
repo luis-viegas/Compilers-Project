@@ -1,0 +1,286 @@
+PARSER_PACKAGE=pt.up.fe.comp;
+PARSER_CLASS=JmmGrammarParser;
+SMART_NODE_CREATION=false;
+TOKENS_ARE_NODES = false;
+
+SKIP : " " | "\t" | "\r" | "\n";
+
+TOKEN :
+    < LESS : "<" > |
+    < AND : "&&" > |
+	< PLUS : "+" > |
+	< MINUS : "-" > |
+	< TIMES : "*" > |
+	< DIVIDE : "/" > |
+	< EQUAL : "="> |
+	< NOT : "!"> |
+	< INTEGER : (["0" - "9"])+ > |
+    <STRING: "String"> |
+    <MAIN: "main"> |
+    <VOID: "void"> |
+    <IF : "if"> |
+    <ELSE : "else"> |
+    <WHILE : "while"> |
+    <STATIC: "static"> |
+    <RETURN: "return" > |
+    <PUBLIC: "public"> |
+    <EXTENDS: "extends"> |
+    < LENGTH : "length"> |
+    < CLASS: "class" > |
+    < IMPORT : "import" > |
+    < TRUE : "true"> |
+    < FALSE : "false"> |
+    < THIS : "this"> |
+    < NEW : "new"> |
+	< SEMICOLON : ";" > |
+	< POINT : "." > |
+	< INT : "int"> |
+	< BOOLEAN : "boolean"> |
+	< LEFTSQUAREBRACKET : "["> |
+    < RIGHTSQUAREBRACKET : "]"> |
+    < LEFTBRACKET : "{"> |
+    < RIGHTBRACKET : "}"> |
+    < LEFTPARENTHESIS: "("> |
+    < RIGHTPARENTHESIS: ")"> |
+    < COMMA: "," > |
+    < WORD : ["a"-"z","A"-"Z","_"](["a"-"z","A"-"Z","0"-"9","_"])* >
+;
+
+Start : Program ;
+
+Program:
+    (ImportDeclaration)*
+    ClassDeclaration
+    <EOF> ;
+
+ ImportDeclaration:
+     < IMPORT >
+     < WORD > {jjtThis.put("name", lastConsumedToken.getImage());}
+     (SubImport)*
+     < SEMICOLON >
+ ;
+
+ SubImport:
+     <POINT> <WORD> {jjtThis.put("name", lastConsumedToken.getImage());}
+;
+
+ClassDeclaration:
+    <CLASS>
+    <WORD> {jjtThis.put("name", lastConsumedToken.getImage());}
+    (<EXTENDS> <WORD> {jjtThis.put("super", lastConsumedToken.getImage());} )?
+    <LEFTBRACKET>
+    (SCAN 2 VarDeclaration)*
+    (MethodDeclaration)*
+    <RIGHTBRACKET>
+;
+
+VarDeclaration :
+    Type
+    < WORD > {jjtThis.put("name", lastConsumedToken.getImage());}
+    < SEMICOLON>
+;
+
+MethodDeclaration:
+    <PUBLIC>
+    (NormalFunction | MainFunction)
+;
+
+MainFunction:
+    <STATIC><VOID><MAIN>
+    <LEFTPARENTHESIS>
+    <STRING>
+    <LEFTSQUAREBRACKET>
+    <RIGHTSQUAREBRACKET>
+    <WORD>
+    <RIGHTPARENTHESIS>
+    <LEFTBRACKET>
+    (SCAN 2 VarDeclaration)*
+    (Statement)*
+    <RIGHTBRACKET>
+;
+
+NormalFunction:
+    Type
+    <WORD>
+    <LEFTPARENTHESIS>
+    (
+        Type
+        <WORD>
+        (
+            <COMMA>
+            Type
+            <WORD>
+        )*
+    )?
+    <RIGHTPARENTHESIS>
+    <LEFTBRACKET>
+    (SCAN 2 VarDeclaration)*
+    (Statement)*
+    <RETURN>
+    Expression
+    <SEMICOLON>
+    <RIGHTBRACKET>
+;
+
+Type:
+    SCAN 2
+    <INT> < LEFTSQUAREBRACKET > < RIGHTSQUAREBRACKET > {jjtThis.put("tipo", "array");}|
+    < BOOLEAN > {jjtThis.put("tipo", lastConsumedToken.getImage());}|
+    < INT > {jjtThis.put("tipo", lastConsumedToken.getImage());}|
+    < WORD > {jjtThis.put("tipo", lastConsumedToken.getImage());}
+;
+
+Expression:
+    SCAN 2
+    (<NEW> ExpressionNew) |
+    Negation  |
+    ExpressionBetweenParenthesis |
+    AndExpression #ExpressaoLogica |
+    ExpressionArray |
+    <WORD>
+;
+
+Negation:
+    <NOT> Expression
+;
+
+AndExpression #void:
+    LessExpression
+    (
+          ( (<AND> LessExpression) ({jjtThis.put("op", "and");}) #BinOp(2) )
+    )*
+;
+
+LessExpression #void:
+    AdditiveExpression
+    (
+          ( (<LESS> AdditiveExpression) ({jjtThis.put("op", "less");}) #BinOp(2) )
+    )*
+;
+
+AdditiveExpression #void:
+    MultiplicativeExpression
+    (
+          ( (<PLUS> MultiplicativeExpression) ({jjtThis.put("op", "add");}) #BinOp(2) ) |
+          ( (<MINUS> MultiplicativeExpression) ({jjtThis.put("op", "subtract");}) #BinOp(2) )
+    )*
+;
+
+MultiplicativeExpression #void:
+    Factor
+    (
+         ( (<TIMES> Factor) ({jjtThis.put("op", "multiplication");}) #BinOp(2) ) |
+         ( (<DIVIDE> Factor) ({jjtThis.put("op", "division");}) #BinOp(2) )
+    )*
+;
+
+Factor #void:
+    SCAN 2
+    ExpressionColon |
+    (<INTEGER> {jjtThis.put("value", lastConsumedToken.getImage());} ) #IntLiteral |
+    <MINUS> Factor |
+    <LEFTPARENTHESIS> AdditiveExpression <RIGHTPARENTHESIS> |
+    <TRUE> |
+    <FALSE> |
+    <THIS>
+;
+
+ExpressionArray:
+    (ExpressionBetweenParenthesis | ExpressionColon | <WORD>)
+    (<LEFTSQUAREBRACKET> Expression <RIGHTSQUAREBRACKET>)+
+;
+
+
+ExpressionBetweenParenthesis:
+    <LEFTPARENTHESIS>
+    Expression
+    <RIGHTPARENTHESIS>
+;
+
+ExpressionColon:
+    (<THIS> | <WORD> | ExpressionBetweenParenthesis)
+    <POINT>
+    (<LENGTH> |
+    (
+        <WORD><LEFTPARENTHESIS>
+        (
+            Expression
+            (<COMMA> Expression)*
+        )?
+        <RIGHTPARENTHESIS>
+    ))
+;
+
+ExpressionNew:
+    ( <INT> <LEFTSQUAREBRACKET> Expression <RIGHTSQUAREBRACKET>) |
+    (<WORD> <LEFTPARENTHESIS><RIGHTPARENTHESIS>)
+;
+
+Statement:
+    (<LEFTBRACKET> Statement <RIGHTBRACKET>) |
+    IfStatement |
+    WhileStatement |
+    SCAN 2 Assign |
+    (Expression <SEMICOLON>)
+;
+
+Assign:
+    SCAN 2
+    (<WORD> <EQUAL> Expression |
+    <WORD> (
+            <LEFTSQUAREBRACKET>
+            Expression
+            <RIGHTSQUAREBRACKET>
+            <EQUAL>
+            Expression
+        )
+        <SEMICOLON>)
+;
+
+IfStatement:
+    <IF>
+    <LEFTPARENTHESIS>
+    Expression
+    <RIGHTPARENTHESIS>
+    Statement
+    <ELSE>
+    Statement
+;
+
+WhileStatement:
+    <WHILE>
+    <LEFTPARENTHESIS>
+    Expression
+    <RIGHTPARENTHESIS>
+    Statement
+;
+
+
+
+
+
+INJECT BaseNode :
+		import pt.up.fe.comp.jmm.ast.JmmNode;
+		import pt.up.fe.comp.jmm.ast.AJmmNode;
+		import pt.up.fe.specs.util.SpecsCollections;
+		extends AJmmNode
+{
+    @Override
+    public List<JmmNode> getChildren() {
+
+        return SpecsCollections.cast(children(), JmmNode.class);
+    }
+
+    @Override
+    public void add(JmmNode child, int index) {
+
+        if (child instanceof Node) {
+
+            addChild(index, (Node) child);
+        } else {
+
+            throw new RuntimeException("Node " + child + " is not a Node.");
+        }
+
+    }
+}

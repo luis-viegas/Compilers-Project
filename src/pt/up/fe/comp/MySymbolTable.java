@@ -10,7 +10,7 @@ public class MySymbolTable implements SymbolTable {
 
     List<String> imports;
 
-    List<Method> methods;
+    List<String> methods;
     String className;
     String superClass;
 
@@ -28,7 +28,7 @@ public class MySymbolTable implements SymbolTable {
     public void addImport(String import_) {
         this.imports.add(import_);
     }
-    public void setMethods(Method method){
+    public void setMethods(String method){
         this.methods.add(method);
     }
     public List<String> getImports() {
@@ -63,7 +63,7 @@ public class MySymbolTable implements SymbolTable {
     }
 
     @Override
-    public List<Method> getMethods() {
+    public List<String> getMethods() {
         return methods;
     }
 

@@ -1,5 +1,13 @@
 import ioPlus;
-class HelloWorld {
+import bla1.bla2;
+import bla3.bla4.bla5;
+
+class HelloWorld extends Something {
+
+    int salary;
+    Boolean flag;
+    int[] justArray;
+
 	public static void main(String[] args) {
 		ioPlus.printHelloWorld();
 	}

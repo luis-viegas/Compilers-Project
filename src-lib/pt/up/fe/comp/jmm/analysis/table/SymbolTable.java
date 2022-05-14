@@ -16,45 +16,45 @@ public interface SymbolTable {
     String getClassName();
 
     /**
-     * 
+     *
      * @return the name that the classes extends, or null if the class does not extend another class
      */
     String getSuper();
 
     /**
-     * 
+     *
      * @return a list of Symbols that represent the fields of the class
      */
     List<Symbol> getFields();
 
     /**
-     * 
+     *
      * @return a list with the methods signatures of the class
      */
     List<String> getMethods();
 
     /**
-     * 
+     *
      * @return the return type of the given method
      */
     Type getReturnType(String methodSignature);
 
     /**
-     * 
+     *
      * @param methodSignature
      * @return a list of parameters of the given method
      */
     List<Symbol> getParameters(String methodSignature);
 
     /**
-     * 
+     *
      * @param methodSignature
      * @return a list of local variables declared in the given method
      */
     List<Symbol> getLocalVariables(String methodSignature);
 
     /**
-     * 
+     *
      * @return a String with information about the contents of the SymbolTable
      */
     default String print() {
@@ -81,43 +81,23 @@ public interface SymbolTable {
             builder.append("\n");
             fields.forEach(field -> builder.append(" - " + field.print() + "\n"));
         }
-
+        /*
         var methods = getMethods();
         builder.append("\nMethods: " + methods.size() + "\n");
 
         for (var method : methods) {
             builder.append(" - signature: ").append(method);
-            builder.append("; returnType: ").append(getReturnType(method).print());
+            builder.append("; returnType: ").append(getReturnType(method));
 
             // var returnType = getReturnType(method);
             var params = getParameters(method);
-            builder.append("; params: ");
-
-            if (params.isEmpty()) {
-                builder.append(" <no params>");
-            } else {
-                var paramsString = params.stream().map(param -> param != null ? param.print() : "<null param>")
-                        .collect(Collectors.joining(", "));
-                builder.append(paramsString);
-            }
-
-            /**
-             * Print of local variables with contribution from group comp2022-2c
-             */
-            var localVariables = getLocalVariables(method);
-            builder.append("; local vars: ");
-
-            if (localVariables.isEmpty()) {
-                builder.append("<no vars>");
-            } else {
-                var localVarsString = localVariables.stream()
-                        .map(localVar -> localVar != null ? localVar.print() : "<null var>")
-                        .collect(Collectors.joining(", "));
-                builder.append(localVarsString);
-            }
-
+            // builder.append(" - " + returnType.print() + " " + method + "(");
+            var paramsString = params.stream().map(param -> param != null ? param.print() : "<null param>")
+                    .collect(Collectors.joining(", "));
+            // builder.append(paramsString + ")\n");
+            builder.append("; params: ").append(paramsString);
             builder.append("\n");
-        }
+        }*/
 
         return builder.toString();
     }

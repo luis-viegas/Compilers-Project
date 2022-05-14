@@ -49,9 +49,9 @@ public class AstToJasminStage implements AstToJasmin {
             {
                 if(vars.get(i).getType().isArray())
                 {
-                    jasminCode.append(" [I");
+                    jasminCode.append(" [I \n");
                 }
-                else {jasminCode.append(" I");}
+                else {jasminCode.append(" I\n");}
             }
             if(vars.get(i).getType().getName().equals("bool"))
             {
@@ -91,13 +91,58 @@ public class AstToJasminStage implements AstToJasmin {
     }
     public void addMethodName(JmmSemanticsResult semanticsResult)
     {
-        List<String> methods;
-        methods = semanticsResult.getSymbolTable().getMethods();
+        List<String> methods = semanticsResult.getSymbolTable().getMethods();
+       // List<Method> methodsAux = semanticsResult.getSymbolTable().getMethodsAux();
+
         for(int i =0; i<methods.size();i++)
         {
-        jasminCode.append(".method");
-        jasminCode.append(methods.get(i));
+        jasminCode.append(".method ");
+        String[] params = methods.get(i).split(";");
+        if(params[0].equals("true")){jasminCode.append(params[0]).append(" ");}
+        jasminCode.append("?public ");
+        jasminCode.append(params[2]);
+        jasminCode.append("( ");
+        List<Symbol> parametros = semanticsResult.getSymbolTable().getParameters(params[2]);
+        for(int j =0; j<parametros.size();j++)
+        {
+            if (parametros.get(j).equals("String"))
+            {
+                jasminCode.append("[Ljava/lang/String; ");
+            }
+
+            if (parametros.get(j).equals("bool"))
+            {
+                jasminCode.append("B; ");
+            }
+
+            if (parametros.get(j).equals("Int"))
+            {
+                jasminCode.append("I; ");
+            }
+        }
+        jasminCode.append(")");
+        switch (params[1])
+        {
+
+            case "string":
+                jasminCode.append("S");
+                break;
+
+            case "bool":
+                jasminCode.append("B");
+                break;
+
+            case "int":
+                jasminCode.append("I");
+                break;
+            case "void":
+                jasminCode.append("V");
+                break;
+        }
+
+
         jasminCode.append("\n");
+        jasminCode.append(".end method");
         }
     }
     public void addSuperName(JmmSemanticsResult semanticsResult){

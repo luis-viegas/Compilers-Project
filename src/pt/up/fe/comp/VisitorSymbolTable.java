@@ -17,9 +17,27 @@ public class VisitorSymbolTable extends PreorderJmmVisitor<MySymbolTable, Boolea
         addVisit("ClassDeclaration", this::visitClass);
         addVisit("VarDeclaration", this::visitVars);
         addVisit("Statement",this::visitStatement);
+<<<<<<< HEAD
+        addVisit("Function",this::visitMethods);
+        //addVisit("param", this::visitParam);
+=======
         addVisit("MethodDeclaration",this::visitMethods);
+>>>>>>> d37a8d251b8d61ee51f00326ae2a368a35f91947
     }
 
+    /*private Boolean visitParam(JmmNode jmmNode, MySymbolTable mySymbolTable)
+    {
+        String fieldName = jmmNode.get("parameters");
+        String tipo = jmmNode.getJmmChild(0).get("tipo");
+        String isArray = jmmNode.getJmmChild(0).get("isArray");
+        Boolean arrayBool = false;
+        if (isArray.equals("true")) arrayBool=true;
+        Type type = new Type(tipo,arrayBool);
+        List<Symbol> listSimbol = null;
+        listSimbol.add(new Symbol(type,fieldName));
+        mySymbolTable.setParameters();
+        return true;
+    }*/
     private Boolean visitStatement(JmmNode jmmNode,MySymbolTable mySymbolTable)
     {
 
@@ -61,9 +79,26 @@ public class VisitorSymbolTable extends PreorderJmmVisitor<MySymbolTable, Boolea
 
     private Boolean visitMethods(JmmNode jmmNode,MySymbolTable mySymbolTable)
     {
-        for (JmmNode node: jmmNode.getChildren()) {
-            visit(node,mySymbolTable);
-        }
+        StringBuilder methods = new StringBuilder();
+        methods.append(jmmNode.get("functionName")).append(";").append(jmmNode.get("Return")).append(";").append(jmmNode.get("isStatic"));
+        mySymbolTable.setMethods(String.valueOf(methods));
+
+        /*for (JmmNode node: jmmNode.getChildren()) {
+            if(node.getKind().equals("param"))
+            {
+                String fieldName = jmmNode.get("parameters");
+                String tipo = jmmNode.getJmmChild(0).get("tipo");
+                String isArray = jmmNode.getJmmChild(0).get("isArray");
+                Boolean arrayBool = false;
+                if (isArray.equals("true")) arrayBool=true;
+                Type type = new Type(tipo,arrayBool);
+                Symbol simbolo= new Symbol(type,fieldName);
+                mySymbolTable.setParameters(fieldName, simbolo);
+
+            }
+            else {visit(node);}
+            methods.append(node.getKind()).append(" ");
+        } */
         return true;
     }
 }

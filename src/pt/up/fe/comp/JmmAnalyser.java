@@ -14,6 +14,9 @@ public class JmmAnalyser implements JmmAnalysis {
 
         visitorSymbolTable.visit(parserResult.getRootNode(), mySymbolTable);
 
+        System.out.println(visitorSymbolTable.reports);
+
+
         return new JmmSemanticsResult(parserResult, mySymbolTable, visitorSymbolTable.reports);
     }
 }

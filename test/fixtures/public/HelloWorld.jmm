@@ -4,11 +4,15 @@ import bla3.bla4.bla5;
 
 class HelloWorld extends Something {
 
-    int salary;
-    Boolean flag;
-    int[] justArray;
+	public int funcExample2(int[] arg1, boolean arg2) {
 
-	public static void main(String[] args) {
-		ioPlus.printHelloWorld();
-	}
+    		int a;
+    		boolean c;
+
+    		a = b+3;
+
+    		ioPlus.printHelloWorld();
+
+    		return a;
+    	}
 }

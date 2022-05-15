@@ -136,7 +136,7 @@ NormalFunction #Function:
     (SCAN 2 VarDeclaration)*
     (Statement)*
     <RETURN>
-    Expression
+    Expression //TODO RETURN NODE
     <SEMICOLON>
     <RIGHTBRACKET>
 ;
@@ -219,7 +219,7 @@ LengthGet #void:
     <POINT>(<LENGTH> #Len)
 ;
 
-MemberFunction #void:
+MemberFunction #MemberFunction(2):
     <POINT>(<WORD> {jjtThis.put("id", lastConsumedToken.getImage());}) #MemberFunc <LEFTPARENTHESIS>
     (FuncArguments)?
     <RIGHTPARENTHESIS>
@@ -255,7 +255,7 @@ ExprOrAssignment #void:
 ;
 
 Assignment:
-    <WORD> {jjtThis.put("id", lastConsumedToken.getImage());}
+    (<WORD> {jjtThis.put("id", lastConsumedToken.getImage());}) #Identifier
     <EQUAL>
     Expression
     <SEMICOLON>

@@ -5,7 +5,9 @@ import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MySymbolTable implements SymbolTable {
 
@@ -13,12 +15,20 @@ public class MySymbolTable implements SymbolTable {
     String className;
     String superClass;
     List<Symbol> fields;
+    List<String> methods;
+    Map<String,Type> returnType;
+    Map<String,List<Symbol>> params;
+    Map<String,List<Symbol>> local_vars;
 
     public MySymbolTable() {
         this.imports = new ArrayList<>();
         this.className = "";
         this.superClass = "";
         this.fields = new ArrayList<>();
+        this.methods = new ArrayList<>();
+        this.returnType = new HashMap<>();
+        this.params = new HashMap<>();
+        this.local_vars = new HashMap<>();
     }
 
     public void addImport(String import_) {
@@ -61,22 +71,39 @@ public class MySymbolTable implements SymbolTable {
 
     @Override
     public List<String> getMethods() {
-        return null;
+        return methods;
     }
+
+    public void setMethods(String method){
+        this.methods.add(method);
+    }
+
 
     @Override
     public Type getReturnType(String methodSignature) {
-        return null;
+        return this.returnType.get(methodSignature);
+    }
+
+    public void addReturnType(String methodSignature, Type returnType){
+        this.returnType.put(methodSignature,returnType);
     }
 
     @Override
     public List<Symbol> getParameters(String methodSignature) {
-        return null;
+        return this.params.get(methodSignature);
+    }
+
+    public void addParameters(String methodSignature, List<Symbol> vars) {
+        this.params.put(methodSignature, vars);
     }
 
     @Override
     public List<Symbol> getLocalVariables(String methodSignature) {
-        return null;
+        return this.local_vars.get(methodSignature);
+    }
+
+    public void addLocalVariables(String methodSignature, List<Symbol> vars) {
+        this.local_vars.put(methodSignature, vars);
     }
 }
 

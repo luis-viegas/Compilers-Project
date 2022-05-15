@@ -11,6 +11,7 @@ public class AnalyserTest {
         ParserTest helloWorld = new ParserTest();
         helloWorld.helloWorld();
 
+
         System.out.println("Symbol Table " + result.getSymbolTable().print());
 
     }

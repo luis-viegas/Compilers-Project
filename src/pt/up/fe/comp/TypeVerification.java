@@ -22,7 +22,9 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
         addVisit("BinOp", this::checkArrayArithmetic);
         addVisit("FunctionCall", this::checkExtends);
         addVisit("FunctionCall", this::checkMethodParametersCompatibility);
-
+        addVisit("BinOp", this::checkOperations);
+        addVisit("ArrayAssignment",this::checkIntegerArrayAccess);
+        addVisit("Assignment", this::checkAssignmentCompability);
     }
 
     private Type getNodeType(JmmNode node) {
@@ -35,7 +37,51 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
 
     }
 
-    private Boolean checkOperations(JmmNode node, MySymbolTable mySymbolTable) { //TODO POINT 2 OF TYPE VERIFICATION
+    private Boolean checkOperations(JmmNode node, MySymbolTable mySymbolTable) {  //TODO POINT 2 OF TYPE VERIFICATION
+        var methodName = node.getAncestor("Function").map(jmmNode -> jmmNode.get("functionName")).orElse("Error");
+        String op1 = node.getJmmChild(0).get("id");
+        String op2 = node.getJmmChild(1).get("id");
+        String type1 = "";
+        String type2 = "";
+        List<Symbol> localVars = mySymbolTable.getLocalVariables(methodName);
+        List<Symbol> params = mySymbolTable.getParameters(methodName);
+        List<Symbol> fields = mySymbolTable.getFields();
+
+        for (Symbol symbol : localVars) {
+            if(symbol.getName().equals(op1)) {
+                type1 = symbol.getType().getName();
+            }
+        }
+        for (Symbol symbol : params) {
+            if(symbol.getName().equals(op1)) {
+                type1 = symbol.getType().getName();
+            }
+        }
+        for (Symbol symbol : fields) {
+            if(symbol.getName().equals(op1)) {
+                type1 = symbol.getType().getName();
+            }
+        }
+        for (Symbol symbol : localVars) {
+            if(symbol.getName().equals(op2)) {
+                type2 = symbol.getType().getName();
+            }
+        }
+        for (Symbol symbol : params) {
+            if(symbol.getName().equals(op2)) {
+                type2 = symbol.getType().getName();
+            }
+        }
+        for (Symbol symbol : fields) {
+            if(symbol.getName().equals(op2)) {
+                type2 = symbol.getType().getName();
+            }
+        }
+        if(!type1.equals(type2))
+        {
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1 , "Operands have different type"));
+            return false;
+        }
         return true;
     }
 
@@ -156,10 +202,133 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
     }
 
     private Boolean checkIntegerArrayAccess(JmmNode node, MySymbolTable mySymbolTable) { //TODO POINT 5 OF TYPE VERIFICATION
+        List<JmmNode> nodes = node.getJmmChild(0).getChildren(); //get index
+        var methodName = node.getAncestor("Function").map(jmmNode -> jmmNode.get("functionName")).orElse("Error");
+        List<Symbol> localVars = mySymbolTable.getLocalVariables(methodName);
+        List<Symbol> params = mySymbolTable.getParameters(methodName);
+        List<Symbol> fields = mySymbolTable.getFields();
+
+        if(nodes.get(0).getKind().equals("Identifier"))
+        {
+            String id = nodes.get(0).get("id");
+            for (Symbol symbol : localVars) {
+                if(symbol.getName().equals(id)) {
+                    if(!symbol.getType().getName().equals("int")) {
+                        reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1, "Identifier of array isnt int"));
+                        return false;
+                    }
+                }
+            }
+            for (Symbol symbol : params) {
+                if(symbol.getName().equals(id)) {
+                    if(!symbol.getType().getName().equals("int")) {
+                        reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1, "Identifier of array isnt int"));
+                        return false;
+                    }
+                }
+            }
+            for (Symbol symbol : fields) {
+                if(symbol.getName().equals(id)) {
+                    if(!symbol.getType().getName().equals("int")) {
+                        reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1, "Identifier of array isnt int"));
+                        return false;
+                    }
+                }
+            }
+
+        }
+        if(nodes.get(0).getKind().equals("BinOp"))
+        {
+            String id = nodes.get(0).getJmmChild(0).get("id");
+            for (Symbol symbol : localVars) {
+                if(symbol.getName().equals(id)) {
+                    if(!symbol.getType().getName().equals("int")) {
+                        reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1, "Identifier of array isnt int"));
+                        return false;
+                    }
+                }
+            }
+            for (Symbol symbol : params) {
+                if(symbol.getName().equals(id)) {
+                    if(!symbol.getType().getName().equals("int")) {
+                        reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1, "Identifier of array isnt int"));
+                        return false;
+                    }
+                }
+            }
+            for (Symbol symbol : fields) {
+                if(symbol.getName().equals(id)) {
+                    if(!symbol.getType().getName().equals("int")) {
+                        reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1, "Identifier of array isnt int"));
+                        return false;
+                    }
+                }
+            }
+
+        }
+
         return true;
     }
 
     private Boolean checkAssignmentCompability(JmmNode node, MySymbolTable mySymbolTable) { //TODO POINT 6 OF TYPE VERIFICATION
+        var methodName = node.getAncestor("Function").map(jmmNode -> jmmNode.get("functionName")).orElse("Error");
+        List<Symbol> localVars = mySymbolTable.getLocalVariables(methodName);
+        List<Symbol> params = mySymbolTable.getParameters(methodName);
+        List<Symbol> fields = mySymbolTable.getFields();
+        String id1 = node.getJmmChild(0).get("id");
+        String id2 = "";
+        String type1 = "";
+        String type2 = "";
+        if(node.getJmmChild(1).getKind().equals("Identifier"))
+        {
+            id2 = node.getJmmChild(1).get("id");
+        }
+        if(node.getJmmChild(1).getKind().equals("IntLiteral"))
+        {
+            type2= "int";
+        }
+        else if(node.getJmmChild(1).getKind().equals("BinOp"))
+        {
+            id2 = node.getJmmChild(1).getJmmChild(0).get("id");
+        }
+        for (Symbol symbol : localVars) {
+            if(symbol.getName().equals(id1)) {
+                type1 = symbol.getType().getName();
+                }
+            }
+
+        for (Symbol symbol : params) {
+            if(symbol.getName().equals(id1)) {
+                type1 = symbol.getType().getName();
+            }
+        }
+        for (Symbol symbol : fields) {
+            if(symbol.getName().equals(id1)) {
+                type1 = symbol.getType().getName();
+            }
+        }
+        for (Symbol symbol : localVars) {
+            if(symbol.getName().equals(id2)) {
+                type2 = symbol.getType().getName();
+            }
+        }
+
+        for (Symbol symbol : params) {
+            if(symbol.getName().equals(id2)) {
+                type2 = symbol.getType().getName();
+            }
+        }
+        for (Symbol symbol : fields) {
+            if(symbol.getName().equals(id2)) {
+                type2 = symbol.getType().getName();
+            }
+        }
+
+        if(!type1.equals(type2))
+        {
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1, "Assignement of vars with different types!"));
+            return false;
+        }
         return true;
     }
 

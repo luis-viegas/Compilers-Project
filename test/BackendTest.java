@@ -20,7 +20,7 @@ import pt.up.fe.comp.TestUtils;
 import pt.up.fe.specs.util.SpecsIo;
 import pt.up.fe.specs.util.SpecsStrings;
 
-public class BackendTest {
+/* public class BackendTest {
 
     // @Test
     // public void testHelloWorld() {
@@ -37,4 +37,16 @@ public class BackendTest {
         var output = TestUtils.runJasmin(jasminCode);
         assertEquals("Hello World!\nHello World Again!\n", SpecsStrings.normalizeFileContents(output));
     }
+}
+*/
+
+public class BackendTest {
+
+    @Test
+    public void testHelloWorld() {
+        var result = TestUtils.backend(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
+        TestUtils.noErrors(result.getReports());
+        System.out.println(result.getJasminCode());
+    }
+
 }

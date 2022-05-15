@@ -2,16 +2,24 @@ import ioPlus;
 import bla1.bla2;
 import bla3.bla4.bla5;
 
-class HelloWorld extends Something {
+class HelloWorld {
 
-	public int funcExample2() {
+    public int example(int a, boolean b){
+        return 1;
+    }
 
-    		boolean a;
-    		int[] b;
+    public int example2(int a){
+            return 1;
+        }
+
+	public static void main(String[] args) {
             int c;
+            boolean d;
+            int z;
 
-            c+c;
+            this.example(c,d).example2();
 
-    		return 1;
+
+
     	}
 }

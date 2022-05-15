@@ -92,12 +92,12 @@ MethodDeclaration #void:
 ;
 
 MainFunction #Function:
-    <STATIC> {jjtThis.put("isStatic", "true");}
-    <VOID> {jjtThis.put("Return", "void");}
+    <STATIC> {jjtThis.put("isStatic", "true"); jjtThis.put("Return", "void");}
+    (<VOID> {jjtThis.put("tipo", "void");jjtThis.put("isArray", "false");}) #Type
     <MAIN> {jjtThis.put("functionName", lastConsumedToken.getImage());}
     <LEFTPARENTHESIS>
     (MainArgs)
-    ( <WORD> {jjtThis.put("parameters", lastConsumedToken.getImage());}) #param(1)
+    ( <WORD> {jjtThis.put("id", lastConsumedToken.getImage());}) #param(1)
     <RIGHTPARENTHESIS>
     <LEFTBRACKET>
     (SCAN 2 VarDeclaration)*
@@ -219,9 +219,9 @@ LengthGet #void:
     <POINT>(<LENGTH> #Len)
 ;
 
-MemberFunction #MemberFunction(2):
-    <POINT>(<WORD> {jjtThis.put("id", lastConsumedToken.getImage());}) #MemberFunc <LEFTPARENTHESIS>
-    (FuncArguments)?
+MemberFunction #void:
+    (<POINT>(<WORD> {jjtThis.put("id", lastConsumedToken.getImage());}) #MemberFunc <LEFTPARENTHESIS>
+    (FuncArguments)?) #FunctionCall
     <RIGHTPARENTHESIS>
 ;
 

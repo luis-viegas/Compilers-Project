@@ -20,6 +20,8 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
         addVisit("BinOp", this::checkOperations);
         addVisit("ArrayAccess", this::checkArrayAccess);
         addVisit("BinOp", this::checkArrayArithmetic);
+        addVisit("FunctionCall", this::checkExtends);
+        addVisit("FunctionCall", this::checkMethodParametersCompatibility);
 
     }
 
@@ -150,4 +152,91 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
         return true;
     }
 
+    private Boolean checkIntegerArrayAccess(JmmNode node, MySymbolTable mySymbolTable) { //TODO POINT 5 OF TYPE VERIFICATION
+        return true;
+    }
+
+    private Boolean checkAssignmentCompability(JmmNode node, MySymbolTable mySymbolTable) { //TODO POINT 6 OF TYPE VERIFICATION
+        return true;
+    }
+
+    private Boolean checkMethodParametersCompatibility(JmmNode node, MySymbolTable mySymbolTable) { 
+
+        var methods = mySymbolTable.getMethods();
+
+        for (String method : methods) {
+            if(node.getJmmChild(0).get("id").equals(method)) {
+                var parameters = mySymbolTable.getParameters(method);
+                if(node.getChildren().size() > 1) {
+                    if(node.getJmmChild(1).getChildren().size() != parameters.size()) {
+                        reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1 , "incorrect number of arguments provided for function call"));
+                        return false;
+                    }
+                    int count = 0;
+                    for (JmmNode arg : node.getJmmChild(1).getChildren()) {
+                        var id = arg.get("id");
+                        String tipo = "";
+                        var methodName = node.getAncestor("Function").map(jmmNode -> jmmNode.get("functionName")).orElse("Error");
+                        List<Symbol> localVars = mySymbolTable.getLocalVariables(methodName);
+                        List<Symbol> params = mySymbolTable.getParameters(methodName);
+                        List<Symbol> fields = mySymbolTable.getFields();
+
+                        for (Symbol symbol : localVars) {
+                            if(symbol.getName().equals(id)) {
+                                tipo = symbol.getType().getName();
+                            }
+                        }
+                        for (Symbol symbol : params) {
+                            if(symbol.getName().equals(id)) {
+                                tipo = symbol.getType().getName();
+                            }
+                        }
+                        for (Symbol symbol : fields) {
+                            if(symbol.getName().equals(id)) {
+                                tipo = symbol.getType().getName();
+                            }
+                        }
+
+                        if(!parameters.get(count).getType().getName().equals(tipo)) {
+                            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1 , "Argument type different than expected"));
+                            return false;
+                        }
+                        count++;
+                    }
+
+                } else {
+                    if(parameters.size() != 0) {
+                        reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1 , "incorrect number of arguments provided for function call"));
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private Boolean checkIfConditionBoolean(JmmNode node, MySymbolTable mySymbolTable) { //TODO POINT 7 OF TYPE VERIFICATION
+        return true;
+    }
+
+    private Boolean checkExtends(JmmNode node, MySymbolTable mySymbolTable) {
+
+
+        var methods = mySymbolTable.getMethods();
+
+        for (String method : methods) {
+            if(node.getJmmChild(0).get("id").equals(method)) {
+                return true;
+            }
+        }
+
+        if(mySymbolTable.getSuper().equals("")) {
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1 , "Trying to call non existing method"));
+            return false;
+        }
+
+
+
+        return true;
+    }
 }

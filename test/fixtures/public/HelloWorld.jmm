@@ -4,15 +4,14 @@ import bla3.bla4.bla5;
 
 class HelloWorld extends Something {
 
-	public int funcExample2(int[] arg1, boolean arg2) {
+	public int funcExample2() {
 
-    		int a;
-    		boolean c;
+    		boolean a;
+    		int[] b;
+            int c;
 
-    		a = b+3;
+            c+c;
 
-    		ioPlus.printHelloWorld();
-
-    		return a;
+    		return 1;
     	}
 }

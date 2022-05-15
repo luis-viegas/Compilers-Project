@@ -20,7 +20,14 @@ public class VisitorSymbolTable extends PreorderJmmVisitor<MySymbolTable, Boolea
         addVisit("ClassDeclaration", this::visitClass);
         addVisit("VarDeclaration", this::visitFields);
         addVisit("Function",this::visitMethods);
-        addVisit("Identifier", this::checkIfDeclared);
+        addVisit("Identifier", this::reportIfNotDeclared);
+    }
+
+    private boolean reportIfNotDeclared(JmmNode node, MySymbolTable mySymbolTable) {
+        if (!checkIfDeclared(node,mySymbolTable)) {
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1 , "Var is not declared"));
+        }
+        return true;
     }
 
     private Boolean checkIfDeclared(JmmNode node, MySymbolTable mySymbolTable) {
@@ -56,9 +63,6 @@ public class VisitorSymbolTable extends PreorderJmmVisitor<MySymbolTable, Boolea
             }
 
         }
-
-
-        reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1 , "Var is not declared"));
         return false;
     }
 

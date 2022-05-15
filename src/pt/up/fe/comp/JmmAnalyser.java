@@ -11,10 +11,14 @@ public class JmmAnalyser implements JmmAnalysis {
         var mySymbolTable = new MySymbolTable();
 
         var visitorSymbolTable = new VisitorSymbolTable();
+        var typeVerification = new TypeVerification();
 
         visitorSymbolTable.visit(parserResult.getRootNode(), mySymbolTable);
+        typeVerification.visit(parserResult.getRootNode(), mySymbolTable);
+
 
         System.out.println(visitorSymbolTable.reports);
+        System.out.println(typeVerification.reports);
 
 
         return new JmmSemanticsResult(parserResult, mySymbolTable, visitorSymbolTable.reports);

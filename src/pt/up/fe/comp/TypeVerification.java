@@ -116,6 +116,9 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
 
     private Boolean checkArrayArithmetic(JmmNode node, MySymbolTable mySymbolTable) {
         for(JmmNode factorNode : node.getChildren()) {
+            if(!factorNode.getKind().equals("Identifier")) {
+                continue;
+            }
             String id = factorNode.get("id");
             if (checkIfDeclared(factorNode,mySymbolTable)) {
                 var methodName = factorNode.getAncestor("Function").map(jmmNode -> jmmNode.get("functionName")).orElse("Error");
@@ -160,7 +163,7 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
         return true;
     }
 
-    private Boolean checkMethodParametersCompatibility(JmmNode node, MySymbolTable mySymbolTable) { 
+    private Boolean checkMethodParametersCompatibility(JmmNode node, MySymbolTable mySymbolTable) {
 
         var methods = mySymbolTable.getMethods();
 

@@ -19,6 +19,7 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
         reports = new ArrayList<>();
         addVisit("BinOp", this::checkOperations);
         addVisit("ArrayAccess", this::checkArrayAccess);
+        addVisit("ArrayAccess", this::checkArrayAccessInt);
         addVisit("BinOp", this::checkArrayArithmetic);
         addVisit("FunctionCall", this::checkExtends);
         addVisit("FunctionCall", this::checkMethodParametersCompatibility);
@@ -39,10 +40,14 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
 
     private Boolean checkOperations(JmmNode node, MySymbolTable mySymbolTable) {  //TODO POINT 2 OF TYPE VERIFICATION
         var methodName = node.getAncestor("Function").map(jmmNode -> jmmNode.get("functionName")).orElse("Error");
-        String op1 = node.getJmmChild(0).get("id");
-        String op2 = node.getJmmChild(1).get("id");
+        String op1 = "";
+        String op2 = "";
         String type1 = "";
         String type2 = "";
+        if(node.getJmmChild(1).getKind().equals("IntLiteral")){type2 =  "int";}
+        else{op2 = node.getJmmChild(1).get("id");}
+        if(node.getJmmChild(0).getKind().equals("IntLiteral")){type1 =  "int";}
+        else{op1 = node.getJmmChild(0).get("id");}
         List<Symbol> localVars = mySymbolTable.getLocalVariables(methodName);
         List<Symbol> params = mySymbolTable.getParameters(methodName);
         List<Symbol> fields = mySymbolTable.getFields();
@@ -50,31 +55,37 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
         for (Symbol symbol : localVars) {
             if(symbol.getName().equals(op1)) {
                 type1 = symbol.getType().getName();
+                if(symbol.getType().isArray()) {type1 += "A";}
             }
         }
         for (Symbol symbol : params) {
             if(symbol.getName().equals(op1)) {
                 type1 = symbol.getType().getName();
+                if(symbol.getType().isArray()) {type1 += "A";}
             }
         }
         for (Symbol symbol : fields) {
             if(symbol.getName().equals(op1)) {
                 type1 = symbol.getType().getName();
+                if(symbol.getType().isArray()) {type1 += "A";}
             }
         }
         for (Symbol symbol : localVars) {
             if(symbol.getName().equals(op2)) {
                 type2 = symbol.getType().getName();
+                if(symbol.getType().isArray()) {type2 += "A";}
             }
         }
         for (Symbol symbol : params) {
             if(symbol.getName().equals(op2)) {
                 type2 = symbol.getType().getName();
+                if(symbol.getType().isArray()) {type2 += "A";}
             }
         }
         for (Symbol symbol : fields) {
             if(symbol.getName().equals(op2)) {
                 type2 = symbol.getType().getName();
+                if(symbol.getType().isArray()) {type2 += "A";}
             }
         }
         if(!type1.equals(type2))
@@ -90,7 +101,6 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
         if (node.getJmmChild(0).getKind().equals("ArrayAccess")){
             return true;
         }
-
         String id = node.getJmmChild(0).get("id");
         if (checkIfDeclared(node.getJmmChild(0),mySymbolTable)) {
             var methodName = node.getAncestor("Function").map(jmmNode -> jmmNode.get("functionName")).orElse("Error");
@@ -123,8 +133,51 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
         }
         return false;
     }
+    private Boolean checkArrayAccessInt(JmmNode node, MySymbolTable mySymbolTable)
+    {
 
-    private Boolean checkIfDeclared(JmmNode node, MySymbolTable mySymbolTable) {
+        String id2 = "";
+        if(node.getJmmChild(0).getKind().equals("Identifier")&&node.getJmmChild(1).getKind().equals("Identifier"))
+        {
+            id2=node.getJmmChild(1).get("id");
+        }
+        var methodName = node.getAncestor("Function").map(jmmNode -> jmmNode.get("functionName")).orElse("Error");
+        List<Symbol> localVars = mySymbolTable.getLocalVariables(methodName);
+        List<Symbol> params = mySymbolTable.getParameters(methodName);
+        List<Symbol> fields = mySymbolTable.getFields();
+
+        for (Symbol symbol : localVars) {
+            if(symbol.getName().equals(id2)) {
+                if(symbol.getType().isArray() || (!symbol.getType().getName().equals("int"))) {
+                    reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1 , "Trying to access an array but not valid access int"));
+                    return false;
+                }
+
+            }
+        }
+        for (Symbol symbol : params) {
+            if(symbol.getName().equals(id2)) {
+
+                if(symbol.getType().isArray() || (!symbol.getType().getName().equals("int"))) {
+                    reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1 , "Trying to access an array but not valid access int"));
+                    return false;
+                }
+            }
+        }
+        for (Symbol symbol : fields) {
+            if(symbol.getName().equals(id2)) {
+
+                if(symbol.getType().isArray() || (!symbol.getType().getName().equals("int"))) {
+                    reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1 , "Trying to access an array but not valid access int"));
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+
+        private Boolean checkIfDeclared(JmmNode node, MySymbolTable mySymbolTable) {
         var id = node.get("id");
         var methodName = node.getAncestor("Function").map(jmmNode -> jmmNode.get("functionName")).orElse("Error");
         List<Symbol> localVars = mySymbolTable.getLocalVariables(methodName);

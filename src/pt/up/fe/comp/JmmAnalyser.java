@@ -17,8 +17,9 @@ public class JmmAnalyser implements JmmAnalysis {
         typeVerification.visit(parserResult.getRootNode(), mySymbolTable);
 
 
+
+        visitorSymbolTable.reports.addAll(typeVerification.reports);
         System.out.println(visitorSymbolTable.reports);
-        System.out.println(typeVerification.reports);
 
 
         return new JmmSemanticsResult(parserResult, mySymbolTable, visitorSymbolTable.reports);

@@ -18,14 +18,19 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
     public TypeVerification() {
         reports = new ArrayList<>();
         addVisit("BinOp", this::checkOperations);
-        addVisit("ArrayAccess", this::checkArrayAccess);
-        addVisit("ArrayAccess", this::checkArrayAccessInt);
+        addVisit("ArrayAccess", this::ArrayAccess);
         addVisit("BinOp", this::checkArrayArithmetic);
         addVisit("FunctionCall", this::checkExtends);
         addVisit("FunctionCall", this::checkMethodParametersCompatibility);
         addVisit("BinOp", this::checkOperations);
         addVisit("ArrayAssignment",this::checkIntegerArrayAccess);
         addVisit("Assignment", this::checkAssignmentCompability);
+    }
+
+    private Boolean ArrayAccess(JmmNode node, MySymbolTable mySymbolTable) {
+        checkArrayAccessInt(node,mySymbolTable);
+        checkArrayAccess(node,mySymbolTable);
+        return true;
     }
 
     private Type getNodeType(JmmNode node) {
@@ -97,6 +102,7 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
     }
 
     private Boolean checkArrayAccess(JmmNode node, MySymbolTable mySymbolTable) {
+        System.out.println("ENTERED FUNCTION");
 
         if (node.getJmmChild(0).getKind().equals("ArrayAccess")){
             return true;
@@ -133,6 +139,7 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
         }
         return false;
     }
+
     private Boolean checkArrayAccessInt(JmmNode node, MySymbolTable mySymbolTable)
     {
 
@@ -177,7 +184,7 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
     }
 
 
-        private Boolean checkIfDeclared(JmmNode node, MySymbolTable mySymbolTable) {
+    private Boolean checkIfDeclared(JmmNode node, MySymbolTable mySymbolTable) {
         var id = node.get("id");
         var methodName = node.getAncestor("Function").map(jmmNode -> jmmNode.get("functionName")).orElse("Error");
         List<Symbol> localVars = mySymbolTable.getLocalVariables(methodName);
@@ -335,12 +342,13 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
         if(node.getJmmChild(1).getKind().equals("Identifier"))
         {
             id2 = node.getJmmChild(1).get("id");
-        }
-        if(node.getJmmChild(1).getKind().equals("IntLiteral"))
-        {
+        } else if(node.getJmmChild(1).getKind().equals("IntLiteral")) {
             type2= "int";
-        }
-        else if(node.getJmmChild(1).getKind().equals("BinOp"))
+
+        } else if(node.getJmmChild(1).getKind().equals("NewObject")) {
+            type2 = node.getJmmChild(1).getJmmChild(0).get("id");
+
+        } else if(node.getJmmChild(1).getKind().equals("BinOp"))
         {
             id2 = node.getJmmChild(1).getJmmChild(0).get("id");
         }

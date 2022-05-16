@@ -192,7 +192,7 @@ MultiplicativeExpression #void:
 NewExpression #void:
     SCAN 2
     <NEW> <INT> <LEFTSQUAREBRACKET> Negation <RIGHTSQUAREBRACKET> |
-    <NEW> Negation <LEFTPARENTHESIS><RIGHTPARENTHESIS> |
+    <NEW> Negation #NewObject <LEFTPARENTHESIS><RIGHTPARENTHESIS> |
     Negation
 ;
 

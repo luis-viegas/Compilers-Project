@@ -57,12 +57,15 @@ public class VisitorSymbolTable extends PreorderJmmVisitor<MySymbolTable, Boolea
                 String[] impNames = importName.split("\\.");
                 String lastImport = impNames[impNames.length-1];
                 if(lastImport.equals(node.get("id"))) {
-                    System.out.println("entered if");
                     return true;
                 }
             }
 
         }
+        if(node.getAncestor("NewObject").isPresent()) {
+            return true;
+        }
+
         return false;
     }
 

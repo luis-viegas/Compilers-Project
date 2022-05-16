@@ -5,11 +5,14 @@ import bla3.bla4.bla5;
 class HelloWorld {
 
     public int example(int a, boolean b){
+        a = a+a;
         return 1;
+
     }
 
     public int example2(int a){
-            return 1;
+        a = a+a;
+        return 1;
         }
 
 	public static void main(String[] args) {

@@ -3,6 +3,7 @@ package pt.up.fe.comp;
 import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
+import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast2jasmin.AstToJasmin;
 import pt.up.fe.comp.jmm.jasmin.JasminResult;
 import pt.up.fe.comp.jmm.report.Report;
@@ -13,6 +14,7 @@ import java.util.Map;
 
 
 public class AstToJasminStage implements AstToJasmin {
+    VisitorJasmin visitor = new VisitorJasmin();
     StringBuilder jasminCode;
     List<Report> reports;
     public AstToJasminStage(){
@@ -22,6 +24,8 @@ public class AstToJasminStage implements AstToJasmin {
     @Override
     public JasminResult toJasmin(JmmSemanticsResult semanticsResult) {
 
+        visitor.visit(semanticsResult.getRootNode(), (MySymbolTable) semanticsResult.getSymbolTable());
+
         addImportName(semanticsResult);
         addSuperName(semanticsResult);
         addClassName(semanticsResult);
@@ -29,6 +33,7 @@ public class AstToJasminStage implements AstToJasmin {
         addVarName(semanticsResult);
         addHeaderName(semanticsResult);
         addMethodName(semanticsResult);
+        addExpressions(semanticsResult);
 
         return new JasminResult(semanticsResult.getSymbolTable().getClassName(), jasminCode.toString(), reports);
     }
@@ -42,6 +47,7 @@ public class AstToJasminStage implements AstToJasmin {
     }
     public void addVarName(JmmSemanticsResult semanticsResult)
     {
+
         List<Symbol> vars = semanticsResult.getSymbolTable().getFields();
         for(int i =0;i<vars.size();i++)
         {
@@ -95,7 +101,8 @@ public class AstToJasminStage implements AstToJasmin {
     {
         List<String> methods = semanticsResult.getSymbolTable().getMethods();
         // List<Method> methodsAux = semanticsResult.getSymbolTable().getMethodsAux();
-
+        System.out.println("ROOT NODE:");
+        System.out.println(semanticsResult.getRootNode().getKind());
         for(int i =0; i<methods.size();i++)
         {
             Type returnType =semanticsResult.getSymbolTable().getReturnType(methods.get(i));
@@ -158,5 +165,15 @@ public class AstToJasminStage implements AstToJasmin {
             jasminCode.append(semanticsResult.getSymbolTable().getSuper());
             jasminCode.append("\n");
         }
+    }
+
+    public void addExpressions(JmmSemanticsResult semanticsResult) {
+        var methods = semanticsResult.getSymbolTable().getMethods();
+
+        for (String nomeMethod : methods) {
+            System.out.println(nomeMethod);
+            System.out.println(visitor.getExprs(nomeMethod));
+        }
+
     }
 }

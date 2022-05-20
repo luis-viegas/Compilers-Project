@@ -18,6 +18,7 @@ public class AstToJasminStage implements AstToJasmin {
     VisitorJasmin visitor = new VisitorJasmin();
     StringBuilder jasminCode;
     List<Report> reports;
+    List<Symbol> vars;
 
 
     public AstToJasminStage(){
@@ -51,7 +52,7 @@ public class AstToJasminStage implements AstToJasmin {
     public void addVarName(JmmSemanticsResult semanticsResult)
     {
 
-        List<Symbol> vars = semanticsResult.getSymbolTable().getFields();
+        vars = semanticsResult.getSymbolTable().getFields();
         for(int i =0;i<vars.size();i++)
         {
             jasminCode.append(".field ");
@@ -166,7 +167,8 @@ public class AstToJasminStage implements AstToJasmin {
                     jasminCode.append("V").append("\n");
                     break;
             }
-
+            jasminCode.append(".limit stack 99 \n");
+            jasminCode.append(".limit locals 99 \n");
            List<JmmNode> expr = visitor.getExprs(methods.get(i));
             String  tipo = "";
             String isArray = "";
@@ -206,47 +208,79 @@ public class AstToJasminStage implements AstToJasmin {
                     {
                         TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
 
-                        jasminCode.append("iconst_").append(node.getJmmChild(1).get("value")).append("\n");
+                        jasminCode.append("iconst").append(node.getJmmChild(1).get("value")).append("\n");
                         jasminCode.append("istore ").append(tipoR.getPost()).append("\n");
                     }
                     if(node.getJmmChild(1).getKind().equals("BinOp"))
                     {
                         TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
-                        BinOp(node.getJmmChild(1),registos);
+                        BinOp(node.getJmmChild(1),registos,semanticsResult);
+                        jasminCode.append("istore ").append(tipoR.getPost()).append("\n");
+
+                    }
+                    if(node.getJmmChild(1).getKind().equals("Identifier"))
+                    {
+                        TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
+                        TypeR tipo1R = registos.get(node.getJmmChild(1).get("id"));
+                        if(tipo1R==null)
+                        {
+                            for(int k=0;k<vars.size();k++)
+                            {
+                                if(vars.get(k).getName().equals(node.getJmmChild(1).get("id")))
+                                {
+                                    jasminCode.append("getfield ").append(semanticsResult.getSymbolTable().getClassName()).append("/").append(vars.get(k).getName());
+                                    if(vars.get(k).getType().getName().equals("int"))
+                                    {jasminCode.append(" I\n");}
+                                    if(vars.get(k).getType().getName().equals("String"))
+                                    {jasminCode.append(" S\n");}
+                                    if(vars.get(k).getType().getName().equals("bool"))
+                                    {jasminCode.append(" B\n");}
+
+                                }
+                            }
+                        }
                         jasminCode.append("istore ").append(tipoR.getPost()).append("\n");
 
                     }
                 }
                 else if(node.getKind().equals("ExprStmt"))
                 {
-                   if(node.getChildren().size()>1)
-                   {
-                       if(node.getJmmChild(node.getChildren().size()-1).getKind().equals("FunctionCall"))
-                       {
-                           if(node.getJmmChild(0).getKind().equals("ThisPointer"))
-                           {jasminCode.append("invokestatic this");}
-                           else
-                           {jasminCode.append("invokestatis ");
-                           }
 
-                           int w =0;
-                           while(node.getJmmChild(w) != node.getJmmChild(node.getChildren().size()-1))
-                           {
-                               if(node.getJmmChild(w).getKind().equals("FunctionCall"))
-                               {
-                                   jasminCode.append("/");
-                                   jasminCode.append(node.getJmmChild(w).getJmmChild(0).get("id"));
-                               }
-                               w++;
+                           if(node.getJmmChild(0).getJmmChild(0).getKind().equals("ThisPointer"))
+                           {jasminCode.append("invokestatic this.");}
+                           else
+                           {jasminCode.append("invokestatic ").append(node.getJmmChild(0).getJmmChild(0).get("id")).append(".");
                            }
-                           jasminCode.append("/");
-                           jasminCode.append(node.getJmmChild(w).getJmmChild(0).get("id"));
+                           jasminCode.append(node.getJmmChild(0).getJmmChild(1).get("id"));
                            jasminCode.append("(");
-                           if(node.getJmmChild(w).getJmmChild(1).getKind().equals("FuncArgs"))
-                           {
-                               for(JmmNode iter : node.getJmmChild(w).getJmmChild(1).getChildren())
+                               for(JmmNode iter : node.getJmmChild(0).getJmmChild(2).getChildren())
                                {
+                                   if(iter.getKind().equals("IntLiteral"))
+                                   {
+                                       jasminCode.append("I;");
+
+                                   }
+                                   else {
                                    TypeR tipoR = registos.get(iter.get("id"));
+                                   if(registos.get(iter.get("id"))==null)
+                                   {
+                                       for(int k =0;k<vars.size();k++)
+                                       {
+                                           if(vars.get(k).getName().equals(iter.get("id")))
+                                           {
+                                               if(vars.get(k).getType().getName().equals("int"))
+                                               {jasminCode.append("I;)");}
+
+                                               if(vars.get(k).getType().getName().equals("bool"))
+                                               {jasminCode.append("B;)");}
+
+                                               if(vars.get(k).getType().getName().equals("String"))
+                                               {jasminCode.append("S;)");}
+
+                                           }
+                                       }
+                                   }
+                                   else{
                                    switch (tipoR.getTipo().getName())
                                    {
                                        case "int":
@@ -260,7 +294,7 @@ public class AstToJasminStage implements AstToJasmin {
                                            break;
                                        default: break;
                                    }
-                               }
+                               }}
                            }
                            jasminCode.append(")");
                           switch (  semanticsResult.getSymbolTable().getReturnType(methods.get(i)).getName()
@@ -282,41 +316,63 @@ public class AstToJasminStage implements AstToJasmin {
                                    jasminCode.append("V").append("\n");
                                    break;
                            }
-                       }
-                   }
+
+
                 }
             }
+            if(semanticsResult.getSymbolTable().getReturnType(methods.get(i)).getName().equals("int"))
+            {jasminCode.append("ireturn \n");}
+            else
+            {jasminCode.append("return \n");}
             jasminCode.append("\n");
             jasminCode.append(".end method\n");
         }
     }
-    public void BinOp(JmmNode node, Map<String, TypeR> registos)
+    public void BinOp(JmmNode node, Map<String, TypeR> registos, JmmSemanticsResult semanticsResult)
     {
         if(node.getJmmChild(0).getKind().equals("BinOp"))
-        {BinOp(node.getJmmChild(0), registos);}
+        {BinOp(node.getJmmChild(0), registos,semanticsResult);}
         else {
             if (node.getJmmChild(0).getKind().equals("IntLiteral")) {
                 jasminCode.append("iconst_").append(node.getJmmChild(0).get("value")).append("\n");
             } else if (node.getJmmChild(0).getKind().equals("Identifier")) {
                 TypeR typeR = registos.get(node.getJmmChild(0).get("id"));
+                if(typeR == null)
+                {
+                for(int k = 0;k<vars.size();k++)
+                {
+                    if(vars.get(k).getName().equals(node.getJmmChild(0).get("id")))
+                    {
+                        jasminCode.append("getfield ").append(semanticsResult.getSymbolTable().getClassName()).append("/").append(vars.get(k).getName());
+                        if(vars.get(k).getType().getName().equals("int"))
+                        {jasminCode.append(" I\n");}
+                        if(vars.get(k).getType().getName().equals("String"))
+                        {jasminCode.append(" S\n");}
+                        if(vars.get(k).getType().getName().equals("bool"))
+                        {jasminCode.append(" B\n");}
+                    }
+                }
+
+                }
+                else{
                 switch (typeR.getTipo().getName()) {
 
                     case "int":
                         if (!typeR.getTipo().isArray()) {
-                            jasminCode.append("istore_").append(typeR.getPost()).append("\n");
+                            jasminCode.append("iload ").append(typeR.getPost()).append("\n");
 
                         } else {
-                            jasminCode.append("iastore_").append(typeR.getPost()).append("\n");
+                            jasminCode.append("iastore ").append(typeR.getPost()).append("\n");
                         }
                         break;
                     default:
                         break;
                 }
-            }
+            }}
         }
 
         if(node.getJmmChild(1).getKind().equals("BinOp"))
-        {BinOp(node.getJmmChild(1), registos);}
+        {BinOp(node.getJmmChild(1), registos,semanticsResult);}
         else
         {
             if(node.getJmmChild(1).getKind().equals("IntLiteral"))
@@ -326,6 +382,24 @@ public class AstToJasminStage implements AstToJasmin {
             else if(node.getJmmChild(1).getKind().equals("Identifier"))
             {
                 TypeR typeR = registos.get(node.getJmmChild(1).get("id"));
+                if(typeR == null)
+                {
+                    for(int k = 0;k<vars.size();k++)
+                    {
+                        if(vars.get(k).getName().equals(node.getJmmChild(0).get("id")))
+                        {
+                            jasminCode.append("getfield ").append(semanticsResult.getSymbolTable().getClassName()).append("/").append(vars.get(k).getName());
+                            if(vars.get(k).getType().getName().equals("int"))
+                            {jasminCode.append(" I\n");}
+                            if(vars.get(k).getType().getName().equals("String"))
+                            {jasminCode.append(" S\n");}
+                            if(vars.get(k).getType().getName().equals("bool"))
+                            {jasminCode.append(" B\n");}
+                        }
+                    }
+
+                }
+                else{
                 switch (typeR.getTipo().getName())
                 {
 
@@ -335,7 +409,7 @@ public class AstToJasminStage implements AstToJasmin {
                         break;
                     default: break;
                 }
-            }
+            }}
         }
         String op = node.get("op");
         switch (op)

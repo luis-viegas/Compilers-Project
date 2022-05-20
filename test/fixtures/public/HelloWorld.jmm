@@ -1,28 +1,19 @@
-import ioPlus;
-import bla1.bla2;
-import bla3.bla4.bla5;
+import io;
 
-class HelloWorld {
+class Test {
 
-    public int example(int a, boolean b){
-        a = a+a;
-        return 1;
+    int a;
 
+    public int ola(int b){
+        b = a;
+        b = b+ 1;
+
+        return b;
     }
 
-    public int example2(int a){
-        a = a+a;
-        return 1;
-        }
 
-	public static void main(String[] args) {
-            int c;
-            boolean d;
-            int z;
+    public static void main(String[] args) {
+        io.ola(1);
+    }
 
-            this.example(c,d).example2();
-
-
-
-    	}
 }

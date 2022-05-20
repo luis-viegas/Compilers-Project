@@ -220,7 +220,7 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
                 return "imported";
             }
         }
-        return null;
+        return "";
     }
 
     private Boolean checkArrayAccess(JmmNode node, MySymbolTable mySymbolTable) {
@@ -513,8 +513,11 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
                     }
                     int count = 0;
                     for (JmmNode arg : node.getJmmChild(2).getChildren()) {
-                        var id = arg.get("id");
+                        var id = "";
+                        if(arg.getKind().equals("Identifier")) {id = arg.get("id");}
                         String tipo = "";
+                        if(arg.getKind().equals("IntLiteral")) {tipo = "int";}
+                        if(arg.getKind().equals("BoolLiteral")) {tipo = "bool";}
                         var methodName = node.getAncestor("Function").map(jmmNode -> jmmNode.get("functionName")).orElse("Error");
                         List<Symbol> localVars = mySymbolTable.getLocalVariables(methodName);
                         List<Symbol> params = mySymbolTable.getParameters(methodName);
@@ -545,7 +548,7 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
 
                 } else {
                     if(parameters.size() != 0) {
-                        reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1 , "incorrect number of arguments provided for function call"));
+                        reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, -1 , "Incorrect number of arguments provided for function call"));
                         return false;
                     }
                 }
@@ -684,14 +687,16 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
             }
         }
 
-        if(mySymbolTable.getSuper().equals("") && !isImported(getVarType(node.getJmmChild(0),mySymbolTable),mySymbolTable)) {
-            reports.add(Report.newError(Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("col")), "Trying to call non existing method", null));
-            return false;
+        if(getVarType(node.getJmmChild(0),mySymbolTable).equals("imported")) {
+            return true;
         }
 
+        if(mySymbolTable.getSuper() != "") {
+            return true;
+        }
 
-
-        return true;
+        reports.add(Report.newError(Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("col")), "Trying to call non existing method", null));
+        return false;
     }
 
 }

@@ -3,7 +3,7 @@ PARSER_CLASS=JmmGrammarParser;
 SMART_NODE_CREATION=false;
 TOKENS_ARE_NODES = false;
 
-SKIP : " " | "\t" | "\r" | "\n";
+SKIP : " " | "\t" | "\r" | "\n" | < "//" (~["\n","\r"])* ("\n" | "\r" | "\r\n") > | < "/*" (~["*"])* "*" ("*" | ~["*","/"] (~["*"])* "*")* "/" >;
 
 TOKEN :
     < LESS : "<" > |
@@ -136,7 +136,7 @@ NormalFunction #Function:
     (SCAN 2 VarDeclaration)*
     (Statement)*
     <RETURN>
-    Expression //TODO RETURN NODE
+    Expression #ReturnExpr
     <SEMICOLON>
     <RIGHTBRACKET>
 ;
@@ -216,26 +216,26 @@ ArrayAccess #void:
 ;
 
 LengthGet #void:
-    <POINT>(<LENGTH> #Len)
+    <POINT>(<LENGTH> #Len(2))
 ;
 
-MemberFunction #void:
-    (<POINT>(<WORD> {jjtThis.put("id", lastConsumedToken.getImage());}) #MemberFunc <LEFTPARENTHESIS>
-    (FuncArguments)?) #FunctionCall
-    <RIGHTPARENTHESIS>
+MemberFunction #FunctionCall(3):
+    <POINT>(<WORD> {jjtThis.put("id", lastConsumedToken.getImage());}) #MemberFunc <LEFTPARENTHESIS>
+    ((<RIGHTPARENTHESIS> #FuncArgs) |
+    ((FuncArguments) <RIGHTPARENTHESIS>))
 ;
 
-FuncArguments #void:
+FuncArguments #FuncArgs:
     (Expression
-    (<COMMA> Expression)*) #FuncArgs
+    (<COMMA> Expression)*)
 ;
 
 TerminalExpr #void:
     (<INTEGER> {jjtThis.put("value", lastConsumedToken.getImage());} ) #IntLiteral |
-    (<LEFTPARENTHESIS> AndExpression <RIGHTPARENTHESIS>) #BetweenParenthesis |
+    (<LEFTPARENTHESIS> AndExpression <RIGHTPARENTHESIS>)  |
     (<MINUS> TerminalExpr) #Negative |
-    (<TRUE>  {jjtThis.put("value", "true");} ) #BoolTrue |
-    (<FALSE>  {jjtThis.put("value", "false");} ) #BoolFalse |
+    (<TRUE>  {jjtThis.put("value", "true");} ) #BoolLiteral |
+    (<FALSE>  {jjtThis.put("value", "false");} ) #BoolLiteral |
     <THIS> #ThisPointer |
     (<WORD> {jjtThis.put("id", lastConsumedToken.getImage());} ) #Identifier
 ;
@@ -275,9 +275,9 @@ ArrayAssignment:
 IfStatement:
     <IF>
     Condition
-    Statement #Then
+    Statement #ThenStmt
     <ELSE>
-    Statement
+    Statement #ElseStmt
 ;
 Condition:
     <LEFTPARENTHESIS>
@@ -288,7 +288,7 @@ Condition:
 WhileStatement:
     <WHILE>
     <LEFTPARENTHESIS>
-    Expression
+    Expression #Condition
     <RIGHTPARENTHESIS>
     Statement
 ;

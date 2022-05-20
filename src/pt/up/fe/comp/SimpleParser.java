@@ -40,8 +40,11 @@ return parse(jmmCode, "Start", config);
             //parser.Start();
             SpecsSystem.invoke(parser, startingRule);
 
-            var root = ((JmmNode) parser.rootNode()).sanitize();
-            System.out.println(root.toTree());
+            var root = ((JmmNode) parser.rootNode());
+            System.out.println(root.sanitize().toTree());
+
+            new LineColAnnotator().visit((JmmNode) root);
+
 
             if (!(root instanceof JmmNode)) {
                 return JmmParserResult.newError(new Report(ReportType.WARNING, Stage.SYNTATIC, -1,

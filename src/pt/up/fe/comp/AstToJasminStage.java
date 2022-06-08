@@ -114,17 +114,17 @@ public class AstToJasminStage implements AstToJasmin {
             Map<String,TypeR> registos = new HashMap<>();
             Type returnType =semanticsResult.getSymbolTable().getReturnType(methods.get(i));
             jasminCode.append(".method ");
-            if(returnType.getName().equals("void")){jasminCode.append("static ");}
             jasminCode.append("public ");
+            if(returnType.getName().equals("void")){jasminCode.append("static ");}
             jasminCode.append(methods.get(i));
-            jasminCode.append("( ");
+            jasminCode.append("(");
             List<Symbol> parametros = semanticsResult.getSymbolTable().getParameters(methods.get(i));
 
             for(int j =0; j<parametros.size();j++)
             {
                 if (parametros.get(j).getType().getName().equals("String"))
                 {
-                    jasminCode.append("[Ljava/lang/String; ");
+                    jasminCode.append("[Ljava/lang/String;");
                     registos.put(parametros.get(j).getName(),new TypeR(posVar,parametros
                             .get(j).getType()));
                     posVar++;

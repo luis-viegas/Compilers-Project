@@ -65,13 +65,13 @@ public class AstToJasminStage implements AstToJasmin {
                 }
                 else {jasminCode.append(" I\n");}
             }
-            if(vars.get(i).getType().getName().equals("bool"))
+            if(vars.get(i).getType().getName().equals("boolean"))
             {
                 if(vars.get(i).getType().isArray())
                 {
-                    jasminCode.append(" [B");
+                    jasminCode.append(" [Z");
                 }
-                else {jasminCode.append(" B");}
+                else {jasminCode.append(" Z");}
             }
             if(vars.get(i).getType().getName().equals("String"))
             {
@@ -113,6 +113,7 @@ public class AstToJasminStage implements AstToJasmin {
             int posVar = 0;
             Map<String,TypeR> registos = new HashMap<>();
             Type returnType =semanticsResult.getSymbolTable().getReturnType(methods.get(i));
+            Boolean isArrayy = semanticsResult.getSymbolTable().getReturnType(methods.get(i)).isArray();
             jasminCode.append(".method ");
             jasminCode.append("public ");
             if(returnType.getName().equals("void")){jasminCode.append("static ");}
@@ -134,7 +135,7 @@ public class AstToJasminStage implements AstToJasmin {
 
                 if (parametros.get(j).getType().getName().equals("boolean"))
                 {
-                    jasminCode.append("B; ");
+                    jasminCode.append("Z; ");
                     registos.put(parametros.get(j).getName(),new TypeR(posVar,parametros
                             .get(j).getType()));
                     posVar++;
@@ -153,19 +154,27 @@ public class AstToJasminStage implements AstToJasmin {
             {
 
                 case "string":
-                    jasminCode.append("S").append("\n");
+                    if(isArrayy)
+                {jasminCode.append("[S");}
+                else {jasminCode.append("S").append("\n");}
                     break;
 
-                case "bool":
-                    jasminCode.append("B").append("\n");
+                case "boolean":
+                    if(isArrayy)
+                {jasminCode.append("[Z");}
+                    else {jasminCode.append("Z").append("\n");}
                     break;
 
                 case "int":
-                    jasminCode.append("I").append("\n");
+                    if(isArrayy)
+                    {jasminCode.append("[I");}
+                    else {jasminCode.append("I").append("\n");}
                     break;
                 case "void":
                     jasminCode.append("V").append("\n");
                     break;
+                default:
+                    jasminCode.append("L").append(returnType.getName()).append(";").append("\n");
             }
             jasminCode.append(".limit stack 99 \n");
             jasminCode.append(".limit locals 99 \n");
@@ -188,8 +197,8 @@ public class AstToJasminStage implements AstToJasmin {
                            posVar++;
                            break;
                         case "boolean":
-                            if(isArray.equals("false")) {jasminCode.append("bstore_").append(posVar).append("\n");;}
-                            else {jasminCode.append("bastore_").append(posVar).append("\n");}
+                            if(isArray.equals("false")) {jasminCode.append("zstore_").append(posVar).append("\n");;}
+                            else {jasminCode.append("zastore_").append(posVar).append("\n");}
                             registos.put(node.get("id"),new TypeR(posVar,new Type(tipo,isArray.equals("true"))));
                             posVar++;
                             break;
@@ -230,11 +239,22 @@ public class AstToJasminStage implements AstToJasmin {
                                 {
                                     jasminCode.append("getfield ").append(semanticsResult.getSymbolTable().getClassName()).append("/").append(vars.get(k).getName());
                                     if(vars.get(k).getType().getName().equals("int"))
-                                    {jasminCode.append(" I\n");}
+                                    {
+                                        if(vars.get(k).getType().isArray()){jasminCode.append(" [I \n");}
+                                        else{jasminCode.append(" I\n");}
+                                    }
                                     if(vars.get(k).getType().getName().equals("String"))
-                                    {jasminCode.append(" S\n");}
-                                    if(vars.get(k).getType().getName().equals("bool"))
-                                    {jasminCode.append(" B\n");}
+                                    {
+                                        if(vars.get(k).getType().isArray()){jasminCode.append(" [S \n");}
+                                        else{jasminCode.append(" S\n");}
+                                    }
+                                    if(vars.get(k).getType().getName().equals("boolean"))
+                                    {
+                                        if(vars.get(k).getType().isArray()){jasminCode.append(" [Z \n");}
+                                        else{jasminCode.append(" Z\n");}
+                                    }
+
+
 
                                 }
                             }
@@ -271,8 +291,8 @@ public class AstToJasminStage implements AstToJasmin {
                                                if(vars.get(k).getType().getName().equals("int"))
                                                {jasminCode.append("I;)");}
 
-                                               if(vars.get(k).getType().getName().equals("bool"))
-                                               {jasminCode.append("B;)");}
+                                               if(vars.get(k).getType().getName().equals("boolean"))
+                                               {jasminCode.append("Z;)");}
 
                                                if(vars.get(k).getType().getName().equals("String"))
                                                {jasminCode.append("S;)");}
@@ -286,8 +306,8 @@ public class AstToJasminStage implements AstToJasmin {
                                        case "int":
                                            jasminCode.append("I;");
                                            break;
-                                       case "bool":
-                                           jasminCode.append("B;");
+                                       case "boolean":
+                                           jasminCode.append("Z;");
                                            break;
                                        case "String":
                                            jasminCode.append("Ljava/lang/String;");
@@ -305,8 +325,8 @@ public class AstToJasminStage implements AstToJasmin {
                                    jasminCode.append("S").append("\n");
                                    break;
 
-                               case "bool":
-                                   jasminCode.append("B").append("\n");
+                               case "boolean":
+                                   jasminCode.append("Z").append("\n");
                                    break;
 
                                case "int":
@@ -321,7 +341,9 @@ public class AstToJasminStage implements AstToJasmin {
                 }
             }
             if(semanticsResult.getSymbolTable().getReturnType(methods.get(i)).getName().equals("int"))
-            {jasminCode.append("ireturn \n");}
+            {
+                jasminCode.append("iload").append("\n");
+                jasminCode.append("ireturn \n");}
             else
             {jasminCode.append("return \n");}
             jasminCode.append("\n");
@@ -348,8 +370,8 @@ public class AstToJasminStage implements AstToJasmin {
                         {jasminCode.append(" I\n");}
                         if(vars.get(k).getType().getName().equals("String"))
                         {jasminCode.append(" S\n");}
-                        if(vars.get(k).getType().getName().equals("bool"))
-                        {jasminCode.append(" B\n");}
+                        if(vars.get(k).getType().getName().equals("boolean"))
+                        {jasminCode.append(" Z\n");}
                     }
                 }
 
@@ -393,8 +415,8 @@ public class AstToJasminStage implements AstToJasmin {
                             {jasminCode.append(" I\n");}
                             if(vars.get(k).getType().getName().equals("String"))
                             {jasminCode.append(" S\n");}
-                            if(vars.get(k).getType().getName().equals("bool"))
-                            {jasminCode.append(" B\n");}
+                            if(vars.get(k).getType().getName().equals("boolean"))
+                            {jasminCode.append(" Z\n");}
                         }
                     }
 

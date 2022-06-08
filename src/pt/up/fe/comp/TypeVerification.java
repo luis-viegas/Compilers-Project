@@ -471,6 +471,9 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
                 if(getOpType(node2) == OpType.arithmeticOp) {
                     return type1.equals("int");
                 } else return type1.equals("boolean");
+
+            case "inttArray":
+                return type1.equals("int") ;
         }
         return false;
     }

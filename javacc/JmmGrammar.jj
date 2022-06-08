@@ -149,8 +149,10 @@ Type:
     (< WORD > | <STRING>) {jjtThis.put("tipo", lastConsumedToken.getImage()); jjtThis.put("isArray", "false");}
 ;
 IntArray:
+    SCAN 2
     < INT >
     < LEFTSQUAREBRACKET >
+    (< INTEGER >)?
     < RIGHTSQUAREBRACKET >
 ;
 
@@ -191,7 +193,7 @@ MultiplicativeExpression #void:
 
 NewExpression #void:
     SCAN 2
-    <NEW> <INT> <LEFTSQUAREBRACKET> Negation <RIGHTSQUAREBRACKET> |
+    (<NEW> <INT> <LEFTSQUAREBRACKET> Negation <RIGHTSQUAREBRACKET> {jjtThis.put("tipo", "int");jjtThis.put("isArray", "true");}) #inttArray|
     <NEW> Negation #NewObject <LEFTPARENTHESIS><RIGHTPARENTHESIS> |
     Negation
 ;
@@ -231,7 +233,9 @@ FuncArguments #FuncArgs:
 ;
 
 TerminalExpr #void:
+    SCAN 2
     (<INTEGER> {jjtThis.put("value", lastConsumedToken.getImage());} ) #IntLiteral |
+    IntArray |
     (<LEFTPARENTHESIS> AndExpression <RIGHTPARENTHESIS>)  |
     (<MINUS> TerminalExpr) #Negative |
     (<TRUE>  {jjtThis.put("value", "true");} ) #BoolLiteral |

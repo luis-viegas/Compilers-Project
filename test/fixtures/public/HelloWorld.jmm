@@ -1,19 +1,11 @@
 import io;
 
-class Test {
-
-    int a;
-
-    public int ola(int b){
-        b = a;
-        b = b+ 1;
-
-        return b;
-    }
-
+class Arithmetic_add {
 
     public static void main(String[] args) {
-        io.ola(1);
-    }
+        int a;
+        a = 2 + 3;
 
+        io.print(a);
+    }
 }

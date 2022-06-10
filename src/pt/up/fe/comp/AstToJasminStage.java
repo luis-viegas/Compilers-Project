@@ -30,6 +30,8 @@ public class AstToJasminStage implements AstToJasmin {
 
         visitor.visit(semanticsResult.getRootNode(), (MySymbolTable) semanticsResult.getSymbolTable());
 
+
+
         addImportName(semanticsResult);
         addSuperName(semanticsResult);
         addClassName(semanticsResult);
@@ -41,6 +43,21 @@ public class AstToJasminStage implements AstToJasmin {
 
         return new JasminResult(semanticsResult.getSymbolTable().getClassName(), jasminCode.toString(), reports);
     }
+
+    private List<Symbol> getScopeVars(JmmSemanticsResult semanticsResult, String method_name) {
+        List<Symbol> result = new ArrayList<>();
+        for( Symbol var : semanticsResult.getSymbolTable().getLocalVariables(method_name)) {
+            result.add(var);
+        }
+        for( Symbol var : semanticsResult.getSymbolTable().getParameters(method_name)) {
+            result.add(var);
+        }
+        for( Symbol var : semanticsResult.getSymbolTable().getFields()) {
+            result.add(var);
+        }
+        return result;
+    }
+
     public void addHeaderName(JmmSemanticsResult semanticsResult)
     {
         jasminCode.append(".method public <init>()V\n" +
@@ -110,7 +127,7 @@ public class AstToJasminStage implements AstToJasmin {
         System.out.println(semanticsResult.getRootNode().getKind());
         for(int i =0; i<methods.size();i++)
         {
-            int posVar = 0;
+            int posVar = 1;
             Map<String,TypeR> registos = new HashMap<>();
             Type returnType =semanticsResult.getSymbolTable().getReturnType(methods.get(i));
             Boolean isArrayy = semanticsResult.getSymbolTable().getReturnType(methods.get(i)).isArray();
@@ -178,9 +195,10 @@ public class AstToJasminStage implements AstToJasmin {
             }
             jasminCode.append(".limit stack 99 \n");
             jasminCode.append(".limit locals 99 \n");
-           List<JmmNode> expr = visitor.getExprs(methods.get(i));
+            List<JmmNode> expr = visitor.getExprs(methods.get(i));
             String  tipo = "";
             String isArray = "";
+            JmmNode returnExpr = null;
             for(JmmNode node : expr)
             {
                 if(node.getKind().equals("VarDeclaration"))
@@ -339,10 +357,14 @@ public class AstToJasminStage implements AstToJasmin {
 
 
                 }
+                else if(node.getKind().equals("ReturnExpr")) {
+                    returnExpr = node;
+                }
             }
             if(semanticsResult.getSymbolTable().getReturnType(methods.get(i)).getName().equals("int"))
             {
-                jasminCode.append("iload").append("\n");
+
+                jasminCode.append("iload_" + registos.get(returnExpr.getJmmChild(0).get("id")).getPost()).append("\n");
                 jasminCode.append("ireturn \n");}
             else
             {jasminCode.append("return \n");}

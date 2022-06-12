@@ -28,7 +28,7 @@ public class VisitorJasmin extends PreorderJmmVisitor<MySymbolTable, Boolean> {
     public Boolean visitFunction(JmmNode node, MySymbolTable mySymbolTable) {
         List<JmmNode> result = new ArrayList<>();
         for(JmmNode child : node.getChildren()) {
-            if (child.getKind().equals("ExprStmt") || child.getKind().equals("Assignment")) {
+            if (child.getKind().equals("ExprStmt") || child.getKind().equals("Assignment") || child.getKind().equals("VarDeclaration")|| child.getKind().equals("IfStatement") || child.getKind().equals("ElseStmt")) {
                 result.add(child);
             }
         }

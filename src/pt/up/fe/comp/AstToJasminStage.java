@@ -67,25 +67,25 @@ public class AstToJasminStage implements AstToJasmin {
             {
                 if(vars.get(i).getType().isArray())
                 {
-                    jasminCode.append(" [I \n");
+                    jasminCode.append(" [I").append("\n");
                 }
-                else {jasminCode.append(" I\n");}
+                else {jasminCode.append(" I").append("\n");}
             }
-            if(vars.get(i).getType().getName().equals("bool"))
+            if(vars.get(i).getType().getName().equals("boolean"))
             {
                 if(vars.get(i).getType().isArray())
                 {
-                    jasminCode.append(" [B");
+                    jasminCode.append(" [Z").append("\n");
                 }
-                else {jasminCode.append(" B");}
+                else {jasminCode.append(" Z").append("\n");}
             }
             if(vars.get(i).getType().getName().equals("String"))
             {
                 if(vars.get(i).getType().isArray())
                 {
-                    jasminCode.append(" [S");
+                    jasminCode.append(" [S").append("\n");
                 }
-                else {jasminCode.append(" S");}
+                else {jasminCode.append(" S").append("\n");}
             }
         }
 

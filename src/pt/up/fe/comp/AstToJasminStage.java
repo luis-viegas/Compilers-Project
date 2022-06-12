@@ -177,6 +177,7 @@ public class AstToJasminStage implements AstToJasmin {
             String isArray = "";
             for(JmmNode node : expr)
             {
+                System.out.println(node.getKind());
                 if(node.getKind().equals("VarDeclaration"))
                 {
                     tipo=node.getJmmChild(0).get("tipo");
@@ -281,8 +282,8 @@ public class AstToJasminStage implements AstToJasmin {
                         for (Map.Entry<String, TypeR> entry : registos.entrySet()) {
                             System.out.println(entry.getKey() + ":" + entry.getValue().getPost());
                         }
-                            jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
 
+                            jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
 
                     }
                     if(node.getJmmChild(1).getKind().equals("Identifier"))

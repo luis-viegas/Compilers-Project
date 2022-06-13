@@ -479,7 +479,12 @@ public class AstToJasminStage implements AstToJasmin {
             }}
         }
 
-            if(node.getJmmChild(1).getKind().equals("IntLiteral"))
+
+            if(node.getJmmChild(1).getKind().equals("BinOp"))
+            {
+                returned = BinOp(node.getJmmChild(1), registos,semanticsResult);
+            }
+            else if(node.getJmmChild(1).getKind().equals("IntLiteral"))
             {
                 jasminCode.append("bipush ").append(node.getJmmChild(1).get("value")).append("\n");
             }

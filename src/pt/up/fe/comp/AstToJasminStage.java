@@ -282,9 +282,14 @@ public class AstToJasminStage implements AstToJasmin {
 
 
                         TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
-                        BinOp(node.getJmmChild(1),registos,semanticsResult);
-                        for (Map.Entry<String, TypeR> entry : registos.entrySet()) {
-                            System.out.println(entry.getKey() + ":" + entry.getValue().getPost());
+                        boolean bin = BinOp(node.getJmmChild(1),registos,semanticsResult);
+                        if(bin)
+                        {
+                            jasminCode.append("iconst_1 \n");
+                        }
+                        else
+                        {
+                            jasminCode.append("iconst_0 \n");
                         }
 
                             jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
@@ -437,10 +442,11 @@ public class AstToJasminStage implements AstToJasmin {
             jasminCode.append(".end method\n");
         }
     }
-    public void BinOp(JmmNode node, Map<String, TypeR> registos, JmmSemanticsResult semanticsResult)
+    public boolean BinOp(JmmNode node, Map<String, TypeR> registos, JmmSemanticsResult semanticsResult)
     {
+        boolean returned = true;
         if(node.getJmmChild(0).getKind().equals("BinOp"))
-        {BinOp(node.getJmmChild(0), registos,semanticsResult);}
+        {returned = BinOp(node.getJmmChild(0), registos,semanticsResult);}
         else {
             if (node.getJmmChild(0).getKind().equals("IntLiteral")) {
                 jasminCode.append("iconst_").append(node.getJmmChild(0).get("value")).append("\n");
@@ -536,17 +542,23 @@ public class AstToJasminStage implements AstToJasmin {
             case "division":
                 jasminCode.append("idiv \n");
                 break;
-            case "and":
-                boolean second;
-                boolean first;
-
-                if(node.getJmmChild(0).get("value").equals("true"))
+            case "less":
+                if(Integer.parseInt(node.getJmmChild(0).get("value"))<Integer.parseInt(node.getJmmChild(1).get("value")))
                 {
-                    first = true;
+                    return true;
                 }
-                else
-                {
-                    first = false;
+                else {
+                    return false;
+                }
+            case "and":
+                boolean second=true;
+                boolean first=true;
+                if(!node.getJmmChild(0).getKind().equals("BinOp")) {
+                    if (node.getJmmChild(0).get("value").equals("true")) {
+                        first = true;
+                    } else {
+                        first = false;
+                    }
                 }
 
                 if(node.getJmmChild(1).get("value").equals("true"))
@@ -557,13 +569,15 @@ public class AstToJasminStage implements AstToJasmin {
                 {
                     second = false;
                 }
-                if(first && second)
+                if(first && second && returned)
                 {
                     jasminCode.append("iconst_1 \n");
+                    return true;
                 }
                 else
                 {
                     jasminCode.append("iconst_0 \n");
+                    return false;
                 }
 
 
@@ -571,7 +585,7 @@ public class AstToJasminStage implements AstToJasmin {
 
             default: break;
         }
-
+    return true;
     }
     public void addSuperName(JmmSemanticsResult semanticsResult){
         jasminCode.append(".super ");
@@ -706,9 +720,14 @@ public class AstToJasminStage implements AstToJasmin {
 
 
                     TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
-                    BinOp(node.getJmmChild(1),registos,semanticsResult);
-                    for (Map.Entry<String, TypeR> entry : registos.entrySet()) {
-                        System.out.println(entry.getKey() + ":" + entry.getValue().getPost());
+                    boolean bin = BinOp(node.getJmmChild(1),registos,semanticsResult);
+                    if(bin)
+                    {
+                        jasminCode.append("iconst_1 \n");
+                    }
+                    else
+                    {
+                        jasminCode.append("iconst_0 \n");
                     }
                     jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
 

@@ -231,7 +231,7 @@ public class AstToJasminStage implements AstToJasmin {
                     {
                         TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
 
-                        jasminCode.append("iconst_").append(node.getJmmChild(1).get("value")).append("\n");
+                        jasminCode.append("bipush ").append(node.getJmmChild(1).get("value")).append("\n");
                         jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
                     }
                     if(node.getJmmChild(1).getKind().equals("BinOp"))
@@ -318,7 +318,7 @@ public class AstToJasminStage implements AstToJasmin {
                     {
                         if(iter.getKind().equals("IntLiteral"))
                         {
-                            jasminCode.append("iconst_").append(iter.get("value \n"));
+                            jasminCode.append("bipush ").append(iter.get("value \n"));
                         }
                         else
                         {
@@ -441,7 +441,7 @@ public class AstToJasminStage implements AstToJasmin {
         {returned = BinOp(node.getJmmChild(0), registos,semanticsResult);}
         else {
             if (node.getJmmChild(0).getKind().equals("IntLiteral")) {
-                jasminCode.append("iconst_").append(node.getJmmChild(0).get("value")).append("\n");
+                jasminCode.append("bipush ").append(node.getJmmChild(0).get("value")).append("\n");
             }
             else if (node.getJmmChild(0).getKind().equals("Identifier")) {
                 TypeR typeR = registos.get(node.getJmmChild(0).get("id"));
@@ -481,7 +481,7 @@ public class AstToJasminStage implements AstToJasmin {
 
             if(node.getJmmChild(1).getKind().equals("IntLiteral"))
             {
-                jasminCode.append("iconst_").append(node.getJmmChild(1).get("value")).append("\n");
+                jasminCode.append("bipush ").append(node.getJmmChild(1).get("value")).append("\n");
             }
             else if(node.getJmmChild(1).getKind().equals("Identifier"))
             {
@@ -661,7 +661,7 @@ public class AstToJasminStage implements AstToJasmin {
                 {
                     TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
 
-                    jasminCode.append("iconst_").append(node.getJmmChild(1).get("value")).append("\n");
+                    jasminCode.append("bipush ").append(node.getJmmChild(1).get("value")).append("\n");
                     jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
                 }
                 if(node.getJmmChild(1).getKind().equals("BinOp"))
@@ -749,7 +749,7 @@ public class AstToJasminStage implements AstToJasmin {
                 {
                     if(iter.getKind().equals("IntLiteral"))
                     {
-                        jasminCode.append("iconst_").append(iter.get("value")).append("\n");
+                        jasminCode.append("bipush ").append(iter.get("value")).append("\n");
                     }
                     else
                     {

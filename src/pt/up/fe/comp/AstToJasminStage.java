@@ -231,8 +231,8 @@ public class AstToJasminStage implements AstToJasmin {
                     {
                         TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
 
-                        jasminCode.append("iconst").append(node.getJmmChild(1).get("value")).append("\n");
-                        jasminCode.append("istore ").append(tipoR.getPost()).append("\n");
+                        jasminCode.append("iconst_").append(node.getJmmChild(1).get("value")).append("\n");
+                        jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
                     }
                     if(node.getJmmChild(1).getKind().equals("BinOp"))
                     {
@@ -283,14 +283,6 @@ public class AstToJasminStage implements AstToJasmin {
 
                         TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
                         boolean bin = BinOp(node.getJmmChild(1),registos,semanticsResult);
-                        if(bin)
-                        {
-                            jasminCode.append("iconst_1 \n");
-                        }
-                        else
-                        {
-                            jasminCode.append("iconst_0 \n");
-                        }
 
                             jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
 
@@ -316,7 +308,7 @@ public class AstToJasminStage implements AstToJasmin {
                                 }
                             }
                         }
-                        jasminCode.append("istore ").append(tipoR.getPost()).append("\n");
+                        jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
 
                     }
                 }
@@ -334,7 +326,7 @@ public class AstToJasminStage implements AstToJasmin {
                             switch (Rtype.getTipo().getName())
                             {
                                 case "int":
-                                    jasminCode.append("iload ").append(Rtype.getPost()).append("\n");
+                                    jasminCode.append("iload_").append(Rtype.getPost()).append("\n");
                                     break;
                                 case "bool":
                                     jasminCode.append("zload ").append(Rtype.getPost()).append("\n");
@@ -475,7 +467,7 @@ public class AstToJasminStage implements AstToJasmin {
 
                     case "int":
                         if (!typeR.getTipo().isArray()) {
-                            jasminCode.append("iload ").append(typeR.getPost()).append("\n");
+                            jasminCode.append("iload_").append(typeR.getPost()).append("\n");
 
                         } else {
                             jasminCode.append("iastore ").append(typeR.getPost()).append("\n");
@@ -516,7 +508,7 @@ public class AstToJasminStage implements AstToJasmin {
                 {
 
                     case "int":
-                        if(!typeR.getTipo().isArray()) {jasminCode.append("istore_").append(typeR.getPost()).append("\n");;}
+                        if(!typeR.getTipo().isArray()) {jasminCode.append("iload_").append(typeR.getPost()).append("\n");;}
                         else {jasminCode.append("iastore_").append(typeR.getPost()).append("\n");}
                         break;
                     default: break;
@@ -669,8 +661,8 @@ public class AstToJasminStage implements AstToJasmin {
                 {
                     TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
 
-                    jasminCode.append("iconst").append(node.getJmmChild(1).get("value")).append("\n");
-                    jasminCode.append("istore ").append(tipoR.getPost()).append("\n");
+                    jasminCode.append("iconst_").append(node.getJmmChild(1).get("value")).append("\n");
+                    jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
                 }
                 if(node.getJmmChild(1).getKind().equals("BinOp"))
                 {
@@ -721,14 +713,7 @@ public class AstToJasminStage implements AstToJasmin {
 
                     TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
                     boolean bin = BinOp(node.getJmmChild(1),registos,semanticsResult);
-                    if(bin)
-                    {
-                        jasminCode.append("iconst_1 \n");
-                    }
-                    else
-                    {
-                        jasminCode.append("iconst_0 \n");
-                    }
+
                     jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
 
 
@@ -754,7 +739,7 @@ public class AstToJasminStage implements AstToJasmin {
                             }
                         }
                     }
-                    jasminCode.append("istore ").append(tipoR.getPost()).append("\n");
+                    jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
 
                 }
             }
@@ -772,7 +757,7 @@ public class AstToJasminStage implements AstToJasmin {
                         switch (Rtype.getTipo().getName())
                         {
                             case "int":
-                                jasminCode.append("iload ").append(Rtype.getPost()).append("\n");
+                                jasminCode.append("iload_").append(Rtype.getPost()).append("\n");
                                 break;
                             case "bool":
                                 jasminCode.append("zload ").append(Rtype.getPost()).append("\n");

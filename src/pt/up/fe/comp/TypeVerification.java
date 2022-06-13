@@ -624,7 +624,9 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
                 if (node.getJmmChild(0).get("op").equals("and")) {
                     return true;
                 }
-                else return false;
+                else if(node.getJmmChild(0).get("op").equals("less"))
+                {return true;}
+                else {return false;}
             case "BoolLiteral":
                 return true;
             case "Identifier":

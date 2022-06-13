@@ -224,6 +224,27 @@ public class AstToJasminStage implements AstToJasmin {
                         iflabel++;
 
                     }
+                    else if(node.getJmmChild(0).getJmmChild(0).getKind().equals("BinOp"))
+                    {
+                        int binresult= BinOp(node.getJmmChild(0).getJmmChild(0),registos,semanticsResult);
+                        if(binresult==1)
+                        {jasminCode.append("iload_1").append("\n");
+                        }
+                        else if(binresult==-1)
+                        {jasminCode.append("iload_0").append("\n");}
+                        else{}
+                        StringBuilder code = new StringBuilder();
+                        StringBuilder code1 = new StringBuilder();
+                        jasminCode.append("ifeq Label").append(iflabel).append("\n");
+                        code.append("Label").append(iflabel).append(":").append("\n");
+                        int finalabel = iflabel;
+                        visitExpr(node.getJmmChild(1).getJmmChild(0).getChildren(),jasminCode,semanticsResult);
+                        jasminCode.append("goto Label9").append(finalabel).append("\n");
+                        visitExpr(node.getJmmChild(2).getJmmChild(0).getChildren(),code,semanticsResult);
+                        jasminCode.append(code);
+                        jasminCode.append("Label9").append(finalabel).append(":").append("\n");
+                        iflabel++;
+                    }
                 }
                 else if ( node.getKind().equals("Assignment"))
                 {
@@ -282,7 +303,7 @@ public class AstToJasminStage implements AstToJasmin {
 
 
                         TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
-                        boolean bin = BinOp(node.getJmmChild(1),registos,semanticsResult);
+                        int bin= BinOp(node.getJmmChild(1),registos,semanticsResult);
 
                             jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
 
@@ -434,18 +455,21 @@ public class AstToJasminStage implements AstToJasmin {
             jasminCode.append(".end method\n");
         }
     }
-    public boolean BinOp(JmmNode node, Map<String, TypeR> registos, JmmSemanticsResult semanticsResult)
+    public int BinOp(JmmNode node, Map<String, TypeR> registos, JmmSemanticsResult semanticsResult)
     {
-        boolean returned = true;
+        TypeR typeR2=null;
+        TypeR typeR1 = null;
+        int returned1 = 1;
+        int returned2 = 1;
         if(node.getJmmChild(0).getKind().equals("BinOp"))
-        {returned = BinOp(node.getJmmChild(0), registos,semanticsResult);}
+        {returned1 = BinOp(node.getJmmChild(0), registos,semanticsResult);}
         else {
             if (node.getJmmChild(0).getKind().equals("IntLiteral")) {
                 jasminCode.append("bipush ").append(node.getJmmChild(0).get("value")).append("\n");
             }
             else if (node.getJmmChild(0).getKind().equals("Identifier")) {
-                TypeR typeR = registos.get(node.getJmmChild(0).get("id"));
-                if(typeR == null)
+                typeR1 = registos.get(node.getJmmChild(0).get("id"));
+                if(typeR1 == null)
                 {
                 for(int k = 0;k<vars.size();k++)
                 {
@@ -463,14 +487,14 @@ public class AstToJasminStage implements AstToJasmin {
 
                 }
                 else{
-                switch (typeR.getTipo().getName()) {
+                switch (typeR1.getTipo().getName()) {
 
                     case "int":
-                        if (!typeR.getTipo().isArray()) {
-                            jasminCode.append("iload_").append(typeR.getPost()).append("\n");
+                        if (!typeR1.getTipo().isArray()) {
+                            jasminCode.append("iload_").append(typeR1.getPost()).append("\n");
 
                         } else {
-                            jasminCode.append("iastore ").append(typeR.getPost()).append("\n");
+                            jasminCode.append("iastore ").append(typeR1.getPost()).append("\n");
                         }
                         break;
                     default:
@@ -482,7 +506,7 @@ public class AstToJasminStage implements AstToJasmin {
 
             if(node.getJmmChild(1).getKind().equals("BinOp"))
             {
-                returned = BinOp(node.getJmmChild(1), registos,semanticsResult);
+                returned2 = BinOp(node.getJmmChild(1), registos,semanticsResult);
             }
             else if(node.getJmmChild(1).getKind().equals("IntLiteral"))
             {
@@ -490,8 +514,8 @@ public class AstToJasminStage implements AstToJasmin {
             }
             else if(node.getJmmChild(1).getKind().equals("Identifier"))
             {
-                TypeR typeR = registos.get(node.getJmmChild(1).get("id"));
-                if(typeR == null)
+                typeR2 = registos.get(node.getJmmChild(1).get("id"));
+                if(typeR2 == null)
                 {
                     for(int k = 0;k<vars.size();k++)
                     {
@@ -509,12 +533,12 @@ public class AstToJasminStage implements AstToJasmin {
 
                 }
                 else{
-                switch (typeR.getTipo().getName())
+                switch (typeR2.getTipo().getName())
                 {
 
                     case "int":
-                        if(!typeR.getTipo().isArray()) {jasminCode.append("iload_").append(typeR.getPost()).append("\n");;}
-                        else {jasminCode.append("iastore_").append(typeR.getPost()).append("\n");}
+                        if(!typeR2.getTipo().isArray()) {jasminCode.append("iload_").append(typeR2.getPost()).append("\n");;}
+                        else {jasminCode.append("iastore_").append(typeR2.getPost()).append("\n");}
                         break;
                     default: break;
                 }
@@ -540,13 +564,24 @@ public class AstToJasminStage implements AstToJasmin {
                 jasminCode.append("idiv \n");
                 break;
             case "less":
-                if(Integer.parseInt(node.getJmmChild(0).get("value"))<Integer.parseInt(node.getJmmChild(1).get("value")))
+               if(node.getJmmChild(0).getKind().equals("IntLiteral") && node.getJmmChild(1).getKind().equals("IntLiteral")){
+                   if(Integer.parseInt(node.getJmmChild(0).get("value"))<Integer.parseInt(node.getJmmChild(1).get("value")))
                 {
-                    return true;
+                    return 1;
                 }
                 else {
-                    return false;
-                }
+                    return -1;
+                }}
+               else if(node.getJmmChild(0).getKind().equals("Identifier") && node.getJmmChild(1).getKind().equals("Identifier"))
+               {
+                   if(typeR1.getTipo().getName().equals("int")&&typeR2.getTipo().getName().equals("int"))
+                   {
+                      jasminCode.append("isub").append("\n");
+                      jasminCode.append("istore_80").append("\n");
+                       return 0;
+                   }
+               }
+               break;
             case "and":
                 boolean second=true;
                 boolean first=true;
@@ -566,15 +601,15 @@ public class AstToJasminStage implements AstToJasmin {
                 {
                     second = false;
                 }
-                if(first && second && returned)
+                if(first && second && returned1>-1 && returned2> -1)
                 {
                     jasminCode.append("iconst_1 \n");
-                    return true;
+                    return 1;
                 }
                 else
                 {
                     jasminCode.append("iconst_0 \n");
-                    return false;
+                    return -1;
                 }
 
 
@@ -582,7 +617,7 @@ public class AstToJasminStage implements AstToJasmin {
 
             default: break;
         }
-    return true;
+    return 1;
     }
     public void addSuperName(JmmSemanticsResult semanticsResult){
         jasminCode.append(".super ");
@@ -647,8 +682,29 @@ public class AstToJasminStage implements AstToJasmin {
                 if(node.getJmmChild(0).getJmmChild(0).getKind().equals("Identifier"))
                 {
                     StringBuilder code = new StringBuilder();
-                    StringBuilder code1 = new StringBuilder();
                     jasminCode.append("iload_").append(registos.get(node.getJmmChild(0).getJmmChild(0).get("id")).getPost()).append("\n");
+                    jasminCode.append("ifeq Label").append(iflabel).append("\n").append("\n");
+                    code.append("Label").append(iflabel).append(":").append("\n");
+                    int finalabel = iflabel;
+                    visitExpr(node.getJmmChild(1).getJmmChild(0).getChildren(),jasminCode, semanticsResult);
+                    jasminCode.append("goto LabelEndIf").append(finalabel).append("\n");
+                    visitExpr(node.getJmmChild(2).getJmmChild(0).getChildren(),code, semanticsResult);
+                    jasminCode.append(code);
+                    jasminCode.append("LabelEndIf").append(finalabel).append(":").append("\n");
+                    iflabel++;
+
+                }
+                else if(node.getJmmChild(0).getJmmChild(0).getKind().equals("BinOp"))
+                {
+                    int binresult= BinOp(node.getJmmChild(0).getJmmChild(0),registos,semanticsResult);
+                    if(binresult==1)
+                    {jasminCode.append("iload_1").append("\n");
+                    }
+                    else if(binresult==-1)
+                    {jasminCode.append("iload_0").append("\n");}
+                    else{}
+                    StringBuilder code = new StringBuilder();
+                    StringBuilder code1 = new StringBuilder();
                     jasminCode.append("ifeq Label").append(iflabel).append("\n");
                     code.append("Label").append(iflabel).append(":").append("\n");
                     int finalabel = iflabel;
@@ -717,10 +773,9 @@ public class AstToJasminStage implements AstToJasmin {
 
 
                     TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
-                    boolean bin = BinOp(node.getJmmChild(1),registos,semanticsResult);
+                    int bin= BinOp(node.getJmmChild(1),registos,semanticsResult);
 
                     jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
-
 
                 }
                 if(node.getJmmChild(1).getKind().equals("Identifier"))

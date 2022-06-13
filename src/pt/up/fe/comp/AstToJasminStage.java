@@ -23,6 +23,7 @@ public class AstToJasminStage implements AstToJasmin {
     int posVar = 0;
     Map<String,TypeR> registos;
     int iflabel = 0;
+    int whileLabel = 0;
 
     public AstToJasminStage(){
         jasminCode = new StringBuilder();
@@ -270,9 +271,17 @@ public class AstToJasminStage implements AstToJasmin {
                         StringBuilder code1 = new StringBuilder();
                         code.append("Label").append(iflabel).append(":").append("\n");
                         int finalabel = iflabel;
-                        visitExpr(node.getJmmChild(1).getChildren(),jasminCode,semanticsResult);
+                        if(node.getJmmChild(1).getJmmChild(0).getKind().equals("ScopeStmt")) {
+                            visitExpr(node.getJmmChild(1).getJmmChild(0).getChildren(),jasminCode,semanticsResult);
+                        } else {
+                            visitExpr(node.getJmmChild(1).getChildren(),jasminCode,semanticsResult);
+                        }
                         jasminCode.append("goto Label9").append(finalabel).append("\n");
-                        visitExpr(node.getJmmChild(2).getChildren(),code,semanticsResult);
+                        if(node.getJmmChild(1).getJmmChild(0).getKind().equals("ScopeStmt")) {
+                            visitExpr(node.getJmmChild(2).getJmmChild(0).getChildren(),code,semanticsResult);
+                        } else {
+                            visitExpr(node.getJmmChild(2).getChildren(),code,semanticsResult);
+                        }
                         jasminCode.append(code);
                         jasminCode.append("Label9").append(finalabel).append(":").append("\n");
                         iflabel++;
@@ -285,7 +294,7 @@ public class AstToJasminStage implements AstToJasmin {
                     {
                         TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
 
-                        jasminCode.append("bipush ").append(node.getJmmChild(1).get("value")).append("\n");
+                        jasminCode.append("ldc ").append(node.getJmmChild(1).get("value")).append("\n");
                         jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
                     }
                     if(node.getJmmChild(1).getKind().equals("BinOp"))
@@ -366,13 +375,53 @@ public class AstToJasminStage implements AstToJasmin {
 
                     }
                 }
+                else if(node.getKind().equals("WhileStatement")) {
+                    int currentWhileLabel = whileLabel;
+                    whileLabel++;
+                    jasminCode.append("WhileLabel").append(currentWhileLabel).append(":").append("\n");
+                    if(node.getJmmChild(0).getJmmChild(0).getKind().equals("Identifier"))
+                    {
+                        jasminCode.append("iload_").append(registos.get(node.getJmmChild(0).getJmmChild(0).get("id")).getPost()).append("\n");
+                        jasminCode.append("ifeq EndWhile").append(currentWhileLabel).append("\n").append("\n");
+                    }
+                    else if(node.getJmmChild(0).getJmmChild(0).getKind().equals("BoolLiteral")) {
+                        if(node.getJmmChild(0).getJmmChild(0).get("value").equals("true"))
+                        {
+                            jasminCode.append("iconst_1").append("\n");
+                            jasminCode.append("ifeq EndWhile").append(currentWhileLabel).append("\n").append("\n");
+                        }
+                        else {
+                            jasminCode.append("iconst_0").append("\n");
+                            jasminCode.append("ifeq EndWhile").append(currentWhileLabel).append("\n").append("\n");
+                        }
+                    }
+                    else if(node.getJmmChild(0).getJmmChild(0).getKind().equals("BinOp"))
+                    {
+                        int binresult= BinOp(node.getJmmChild(0).getJmmChild(0),registos,semanticsResult);
+                        if(binresult==1)
+                        {jasminCode.append("iload_1").append("\n");
+                        }
+                        else if(binresult==-1)
+                        {jasminCode.append("iload_0").append("\n");}
+                        else if(binresult==0)
+                        {
+                            jasminCode.append("if_icmpge EndWhile").append(currentWhileLabel).append("\n").append("\n");
+
+                        }
+                    }
+                    visitExpr(node.getJmmChild(1).getChildren(),jasminCode, semanticsResult);
+                    jasminCode.append("goto WhileLabel").append(currentWhileLabel).append("\n");
+                    jasminCode.append("EndWhile").append(currentWhileLabel).append(":").append("\n");
+
+
+                }
                 else if(node.getKind().equals("ExprStmt"))
                 {
                     for(JmmNode iter : node.getJmmChild(0).getJmmChild(2).getChildren())
                     {
                         if(iter.getKind().equals("IntLiteral"))
                         {
-                            jasminCode.append("bipush ").append(iter.get("value \n"));
+                            jasminCode.append("ldc ").append(iter.get("value \n"));
                         }
                         else
                         {
@@ -498,7 +547,7 @@ public class AstToJasminStage implements AstToJasmin {
         {returned1 = BinOp(node.getJmmChild(0), registos,semanticsResult);}
         else {
             if (node.getJmmChild(0).getKind().equals("IntLiteral")) {
-                jasminCode.append("bipush ").append(node.getJmmChild(0).get("value")).append("\n");
+                jasminCode.append("ldc ").append(node.getJmmChild(0).get("value")).append("\n");
             }
             else if (node.getJmmChild(0).getKind().equals("Identifier")) {
                 typeR1 = registos.get(node.getJmmChild(0).get("id"));
@@ -535,37 +584,35 @@ public class AstToJasminStage implements AstToJasmin {
                 }
             }}
         }
-
-
-            if(node.getJmmChild(1).getKind().equals("BinOp"))
+        if(node.getJmmChild(1).getKind().equals("BinOp"))
+        {
+            returned2 = BinOp(node.getJmmChild(1), registos,semanticsResult);
+        }
+        else if(node.getJmmChild(1).getKind().equals("IntLiteral"))
+        {
+            jasminCode.append("ldc ").append(node.getJmmChild(1).get("value")).append("\n");
+        }
+        else if(node.getJmmChild(1).getKind().equals("Identifier"))
+        {
+            typeR2 = registos.get(node.getJmmChild(1).get("id"));
+            if(typeR2 == null)
             {
-                returned2 = BinOp(node.getJmmChild(1), registos,semanticsResult);
-            }
-            else if(node.getJmmChild(1).getKind().equals("IntLiteral"))
-            {
-                jasminCode.append("bipush ").append(node.getJmmChild(1).get("value")).append("\n");
-            }
-            else if(node.getJmmChild(1).getKind().equals("Identifier"))
-            {
-                typeR2 = registos.get(node.getJmmChild(1).get("id"));
-                if(typeR2 == null)
+                for(int k = 0;k<vars.size();k++)
                 {
-                    for(int k = 0;k<vars.size();k++)
+                    if(vars.get(k).getName().equals(node.getJmmChild(0).get("id")))
                     {
-                        if(vars.get(k).getName().equals(node.getJmmChild(0).get("id")))
-                        {
-                            jasminCode.append("getfield ").append(semanticsResult.getSymbolTable().getClassName()).append("/").append(vars.get(k).getName());
-                            if(vars.get(k).getType().getName().equals("int"))
-                            {jasminCode.append(" I\n");}
-                            if(vars.get(k).getType().getName().equals("String"))
-                            {jasminCode.append(" S\n");}
-                            if(vars.get(k).getType().getName().equals("bool"))
-                            {jasminCode.append(" B\n");}
-                        }
+                        jasminCode.append("getfield ").append(semanticsResult.getSymbolTable().getClassName()).append("/").append(vars.get(k).getName());
+                        if(vars.get(k).getType().getName().equals("int"))
+                        {jasminCode.append(" I\n");}
+                        if(vars.get(k).getType().getName().equals("String"))
+                        {jasminCode.append(" S\n");}
+                        if(vars.get(k).getType().getName().equals("bool"))
+                        {jasminCode.append(" B\n");}
                     }
-
                 }
-                else{
+
+            }
+            else{
                 switch (typeR2.getTipo().getName())
                 {
 
@@ -611,6 +658,14 @@ public class AstToJasminStage implements AstToJasmin {
                    {
                        return 0;
                    }
+               }
+               else if(node.getJmmChild(0).getKind().equals("Identifier") && node.getJmmChild(1).getKind().equals("IntLiteral"))
+               {
+                   return 0;
+               }
+               else if(node.getJmmChild(0).getKind().equals("IntLiteral") && node.getJmmChild(1).getKind().equals("Identifier"))
+               {
+                   return 0;
                }
                break;
             case "and":
@@ -786,7 +841,7 @@ public class AstToJasminStage implements AstToJasmin {
                 {
                     TypeR tipoR = registos.get(node.getJmmChild(0).get("id"));
 
-                    jasminCode.append("bipush ").append(node.getJmmChild(1).get("value")).append("\n");
+                    jasminCode.append("ldc ").append(node.getJmmChild(1).get("value")).append("\n");
                     jasminCode.append("istore_").append(tipoR.getPost()).append("\n");
                 }
                 if(node.getJmmChild(1).getKind().equals("BinOp"))
@@ -873,7 +928,7 @@ public class AstToJasminStage implements AstToJasmin {
                 {
                     if(iter.getKind().equals("IntLiteral"))
                     {
-                        jasminCode.append("bipush ").append(iter.get("value")).append("\n");
+                        jasminCode.append("ldc ").append(iter.get("value")).append("\n");
                     }
                     else
                     {
@@ -978,6 +1033,44 @@ public class AstToJasminStage implements AstToJasmin {
 
 
 
+            }
+            else if(node.getKind().equals("WhileStatement")) {
+                int currentWhileLabel = whileLabel;
+                whileLabel++;
+                jasminCode.append("WhileLabel").append(currentWhileLabel).append(":").append("\n");
+                if(node.getJmmChild(0).getJmmChild(0).getKind().equals("Identifier"))
+                {
+                    jasminCode.append("iload_").append(registos.get(node.getJmmChild(0).getJmmChild(0).get("id")).getPost()).append("\n");
+                    jasminCode.append("ifeq EndWhile").append(currentWhileLabel).append("\n").append("\n");
+                }
+                else if(node.getJmmChild(0).getJmmChild(0).getKind().equals("BoolLiteral")) {
+                    if(node.getJmmChild(0).getJmmChild(0).get("value").equals("true"))
+                    {
+                        jasminCode.append("iconst_1").append("\n");
+                        jasminCode.append("ifeq EndWhile").append(currentWhileLabel).append("\n").append("\n");
+                    }
+                    else {
+                        jasminCode.append("iconst_0").append("\n");
+                        jasminCode.append("ifeq EndWhile").append(currentWhileLabel).append("\n").append("\n");
+                    }
+                }
+                else if(node.getJmmChild(0).getJmmChild(0).getKind().equals("BinOp"))
+                {
+                    int binresult= BinOp(node.getJmmChild(0).getJmmChild(0),registos,semanticsResult);
+                    if(binresult==1)
+                    {jasminCode.append("iload_1").append("\n");
+                    }
+                    else if(binresult==-1)
+                    {jasminCode.append("iload_0").append("\n");}
+                    else if(binresult==0)
+                    {
+                        jasminCode.append("if_icmpge EndWhile").append(currentWhileLabel).append("\n").append("\n");
+
+                    }
+                }
+                visitExpr(node.getJmmChild(1).getChildren(),jasminCode, semanticsResult);
+                jasminCode.append("goto WhileLabel").append(currentWhileLabel).append("\n");
+                jasminCode.append("EndWhile").append(currentWhileLabel).append(":").append("\n");
             }
         }
     }

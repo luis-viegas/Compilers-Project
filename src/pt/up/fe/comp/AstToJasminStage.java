@@ -232,10 +232,12 @@ public class AstToJasminStage implements AstToJasmin {
                         }
                         else if(binresult==-1)
                         {jasminCode.append("iload_0").append("\n");}
-                        else{}
+                        else if(binresult==0)
+                        {
+                            jasminCode.append("if_icmpge Label").append(iflabel).append("\n");
+                        }
                         StringBuilder code = new StringBuilder();
                         StringBuilder code1 = new StringBuilder();
-                        jasminCode.append("ifeq Label").append(iflabel).append("\n");
                         code.append("Label").append(iflabel).append(":").append("\n");
                         int finalabel = iflabel;
                         visitExpr(node.getJmmChild(1).getJmmChild(0).getChildren(),jasminCode,semanticsResult);
@@ -576,8 +578,6 @@ public class AstToJasminStage implements AstToJasmin {
                {
                    if(typeR1.getTipo().getName().equals("int")&&typeR2.getTipo().getName().equals("int"))
                    {
-                      jasminCode.append("isub").append("\n");
-                      jasminCode.append("istore_80").append("\n");
                        return 0;
                    }
                }
@@ -702,11 +702,14 @@ public class AstToJasminStage implements AstToJasmin {
                     }
                     else if(binresult==-1)
                     {jasminCode.append("iload_0").append("\n");}
-                    else{}
+                    else if(binresult==0)
+                    {
+                        jasminCode.append("if_icmpge Label").append(iflabel).append("\n");
+
+                    }
                     StringBuilder code = new StringBuilder();
                     StringBuilder code1 = new StringBuilder();
-                    jasminCode.append("ifeq Label").append(iflabel).append("\n");
-                    code.append("Label").append(iflabel).append(":").append("\n");
+                   code.append("Label").append(iflabel).append(":").append("\n");
                     int finalabel = iflabel;
                     visitExpr(node.getJmmChild(1).getJmmChild(0).getChildren(),jasminCode,semanticsResult);
                     jasminCode.append("goto Label9").append(finalabel).append(":").append("\n");

@@ -216,13 +216,43 @@ public class AstToJasminStage implements AstToJasmin {
                         jasminCode.append("ifeq Label").append(iflabel).append("\n").append("\n");
                         code.append("Label").append(iflabel).append(":").append("\n");
                         int finalabel = iflabel;
-                        visitExpr(node.getJmmChild(1).getJmmChild(0).getChildren(),jasminCode, semanticsResult);
+                        visitExpr(node.getJmmChild(1).getChildren(),jasminCode, semanticsResult);
                         jasminCode.append("goto LabelEndIf").append(finalabel).append("\n");
-                        visitExpr(node.getJmmChild(2).getJmmChild(0).getChildren(),code, semanticsResult);
+                        visitExpr(node.getJmmChild(2).getChildren(),code, semanticsResult);
                         jasminCode.append(code);
                         jasminCode.append("LabelEndIf").append(finalabel).append(":").append("\n");
                         iflabel++;
 
+                    }
+                    else if(node.getJmmChild(0).getJmmChild(0).getKind().equals("BoolLiteral"))
+                    {
+                        if(node.getJmmChild(0).getJmmChild(0).get("value").equals("true"))
+                        {
+                            StringBuilder code = new StringBuilder();
+                            jasminCode.append("iconst_1").append("\n");
+                            jasminCode.append("ifeq Label").append(iflabel).append("\n");
+                            code.append("Label").append(iflabel).append(":").append("\n");
+                            int finalabel = iflabel;
+                            visitExpr(node.getJmmChild(1).getChildren(),jasminCode, semanticsResult);
+                            jasminCode.append("goto LabelEndIf").append(finalabel).append("\n");
+                            visitExpr(node.getJmmChild(2).getChildren(),code, semanticsResult);
+                            jasminCode.append(code);
+                            jasminCode.append("LabelEndIf").append(finalabel).append(":").append("\n");
+                            iflabel++;
+                        }
+                        else {
+                            StringBuilder code = new StringBuilder();
+                            jasminCode.append("iconst_0").append("\n");
+                            jasminCode.append("ifeq Label").append(iflabel).append("\n").append("\n");
+                            code.append("Label").append(iflabel).append(":").append("\n");
+                            int finalabel = iflabel;
+                            visitExpr(node.getJmmChild(1).getChildren(),jasminCode, semanticsResult);
+                            jasminCode.append("goto LabelEndIf").append(finalabel).append("\n");
+                            visitExpr(node.getJmmChild(2).getChildren(),code, semanticsResult);
+                            jasminCode.append(code);
+                            jasminCode.append("LabelEndIf").append(finalabel).append(":").append("\n");
+                            iflabel++;
+                        }
                     }
                     else if(node.getJmmChild(0).getJmmChild(0).getKind().equals("BinOp"))
                     {
@@ -240,13 +270,14 @@ public class AstToJasminStage implements AstToJasmin {
                         StringBuilder code1 = new StringBuilder();
                         code.append("Label").append(iflabel).append(":").append("\n");
                         int finalabel = iflabel;
-                        visitExpr(node.getJmmChild(1).getJmmChild(0).getChildren(),jasminCode,semanticsResult);
+                        visitExpr(node.getJmmChild(1).getChildren(),jasminCode,semanticsResult);
                         jasminCode.append("goto Label9").append(finalabel).append("\n");
-                        visitExpr(node.getJmmChild(2).getJmmChild(0).getChildren(),code,semanticsResult);
+                        visitExpr(node.getJmmChild(2).getChildren(),code,semanticsResult);
                         jasminCode.append(code);
                         jasminCode.append("Label9").append(finalabel).append(":").append("\n");
                         iflabel++;
                     }
+
                 }
                 else if ( node.getKind().equals("Assignment"))
                 {
@@ -693,6 +724,36 @@ public class AstToJasminStage implements AstToJasmin {
                     jasminCode.append("LabelEndIf").append(finalabel).append(":").append("\n");
                     iflabel++;
 
+                }
+                else if(node.getJmmChild(0).getJmmChild(0).getKind().equals("BoolLiteral"))
+                {
+                    if(node.getJmmChild(0).getJmmChild(0).get("value").equals("true"))
+                    {
+                        StringBuilder code = new StringBuilder();
+                        jasminCode.append("iconst_1").append("\n");
+                        jasminCode.append("ifeq Label").append(iflabel).append("\n");
+                        code.append("Label").append(iflabel).append(":").append("\n");
+                        int finalabel = iflabel;
+                        visitExpr(node.getJmmChild(1).getChildren(),jasminCode, semanticsResult);
+                        jasminCode.append("goto LabelEndIf").append(finalabel).append("\n");
+                        visitExpr(node.getJmmChild(2).getChildren(),code, semanticsResult);
+                        jasminCode.append(code);
+                        jasminCode.append("LabelEndIf").append(finalabel).append(":").append("\n");
+                        iflabel++;
+                    }
+                    else {
+                        StringBuilder code = new StringBuilder();
+                        jasminCode.append("iconst_0").append("\n");
+                        jasminCode.append("ifeq Label").append(iflabel).append("\n").append("\n");
+                        code.append("Label").append(iflabel).append(":").append("\n");
+                        int finalabel = iflabel;
+                        visitExpr(node.getJmmChild(1).getChildren(),jasminCode, semanticsResult);
+                        jasminCode.append("goto LabelEndIf").append(finalabel).append("\n");
+                        visitExpr(node.getJmmChild(2).getChildren(),code, semanticsResult);
+                        jasminCode.append(code);
+                        jasminCode.append("LabelEndIf").append(finalabel).append(":").append("\n");
+                        iflabel++;
+                    }
                 }
                 else if(node.getJmmChild(0).getJmmChild(0).getKind().equals("BinOp"))
                 {

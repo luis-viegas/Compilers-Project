@@ -37,6 +37,8 @@ public class AstToJasminStage implements AstToJasmin {
 
         visitor.visit(semanticsResult.getRootNode(), (MySymbolTable) semanticsResult.getSymbolTable());
 
+        if(!semanticsResult.getSymbolTable().getMethods().contains("main")) posVar++;
+
         //addImportName(semanticsResult);
         //addSuperName(semanticsResult);
         addClassName(semanticsResult);
@@ -45,6 +47,7 @@ public class AstToJasminStage implements AstToJasmin {
         addHeaderName(semanticsResult);
         addMethodName(semanticsResult);
         addExpressions(semanticsResult);
+
 
         return new JasminResult(semanticsResult.getSymbolTable().getClassName(), jasminCode.toString(), reports);
     }
@@ -157,20 +160,27 @@ public class AstToJasminStage implements AstToJasmin {
             {
 
                 case "string":
-                    jasminCode.append("S").append("\n");
+                    jasminCode.append("S");
                     break;
 
-                case "bool":
-                    jasminCode.append("B").append("\n");
+                case "boolean":
+                    jasminCode.append("Z");
                     break;
 
                 case "int":
-                    jasminCode.append("I").append("\n");
+                    if(returnType.isArray()) {
+                        jasminCode.append("[I");
+                    } else{
+                        jasminCode.append("I");
+                    }
                     break;
                 case "void":
-                    jasminCode.append("V").append("\n");
+                    jasminCode.append("V");
                     break;
+                default:
+                    jasminCode.append("L").append(returnType.getName()).append(";");
             }
+            jasminCode.append("\n");
             jasminCode.append(".limit stack 98 \n");
             jasminCode.append(".limit locals 98 \n");
            List<JmmNode> expr = visitor.getExprs(methods.get(i));
@@ -552,9 +562,21 @@ public class AstToJasminStage implements AstToJasmin {
 
 
                 }
+                else if(node.getKind().equals("ReturnExpr")) {
+                     if (semanticsResult.getSymbolTable().getReturnType(methods.get(i)).getName().equals("int"))
+                    {
+                        if(node.getJmmChild(0).getKind().equals("IntLiteral")){
+                            jasminCode.append("ldc ").append(node.getJmmChild(0).get("value")).append("\n");
+                        } else {
+                            jasminCode.append("iload_").append(registos.get(node.getJmmChild(0).get("id")).getPost()).append("\n");
+                        }
+                    }
+                }
             }
             if(semanticsResult.getSymbolTable().getReturnType(methods.get(i)).getName().equals("int"))
-            {jasminCode.append("ireturn \n");}
+            {
+                jasminCode.append("ireturn \n");
+            }
             else
             {jasminCode.append("return \n");}
             jasminCode.append("\n");

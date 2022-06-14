@@ -407,7 +407,11 @@ public class AstToJasminStage implements AstToJasmin {
                     }
                     if (node.getJmmChild(1).getKind().equals("FunctionCall")) {
                         JmmNode functionCall = node.getJmmChild(1);
-                        jasminCode.append("aload ").append(registos.get(functionCall.getJmmChild(0).get("id")).getPost()).append("\n");
+                        if(functionCall.getJmmChild(0).getKind().equals("ThisPointer")) {
+                            jasminCode.append("aload ").append(0).append("\n");
+                        } else {
+                            jasminCode.append("aload ").append(registos.get(functionCall.getJmmChild(0).get("id")).getPost()).append("\n");
+                        }
                         for (var argument : functionCall.getJmmChild(2).getChildren()) {
                             switch (argument.getKind()) {
                                 case "Identifier":

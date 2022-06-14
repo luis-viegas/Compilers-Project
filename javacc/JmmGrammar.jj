@@ -197,7 +197,7 @@ NewExpression #void:
 ;
 
 Negation #void:
-    <NOT> Factor |
+    <NOT> Factor #Negation |
     Factor
 ;
 

@@ -446,6 +446,7 @@ public class TypeVerification extends PostorderJmmVisitor<MySymbolTable,Boolean>
     private Boolean checkAssignmentCompabilityAux(JmmNode node, MySymbolTable mySymbolTable) {
         var type1 = getVarType(node.getJmmChild(0), mySymbolTable);
         var node2 = node.getJmmChild(1);
+        if (node2.getKind().equals("Negation")) node2 = node2.getJmmChild(0);
         switch (node2.getKind()) {
             case "Identifier":
                 if(getVarType(node2,mySymbolTable).equals(type1)) {
